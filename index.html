@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Genius Premium Tuition - Sell Bios</title>
+
+    <!-- ================================================================
+         ╔════════════════════════════════════════════════════════════╗
+         ║   SETTINGS — this is the ONLY block you need to edit         ║
+         ╚════════════════════════════════════════════════════════════╝
+
+         1) firebase — paste the config object from your Firebase project:
+            Project settings (gear icon) > General > Your apps > SDK setup
+            and configuration > Config. See README.md step A6.
+
+         2) OWNER_EMAIL — the one account that can add or remove bio
+            admins. Everyone else's upload rights live in Firestore at
+            config/access and are editable from the Admin tab, so there
+            is ONE list and it is the same list the rules enforce.
+
+            Changing OWNER_EMAIL here grants nothing on its own — it must
+            ALSO be changed in firestore.rules, then re-published.
+    ================================================================= -->
+    <script>
+        window.GENIUS = {
+            firebase: {
+                apiKey:            "AIzaSyBAp00r48nZ3_wb3p7QTZo26cZp-rTEcHA",
+                authDomain:        "sell-bios.firebaseapp.com",
+                projectId:         "sell-bios",
+                storageBucket:     "sell-bios.firebasestorage.app",
+                messagingSenderId: "670779599230",
+                appId:             "1:670779599230:web:ee8fc469d09dd3c4e3ab2f"
+            },
+
+            OWNER_EMAIL: 'zak.k@geniuspremium.com',
+        };
+    </script>
+    <!-- ==================== END OF SETTINGS ========================= -->
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-navy: #1a2a3a;
+            --text-dark: #333333;
+            --bg-light: #f9fbfd;
+            --grid-border: #e0e6ed;
+            --accent-gold: #d4af37;
+            --danger: #e74c3c;
+            --ok: #2ecc71;
+
+            --d-enter: 220ms;
+            --d-exit: 150ms;
+            --ease: cubic-bezier(.22, .61, .36, 1);
+        }
+
+        * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+
+        body {
+            background: radial-gradient(ellipse at center, #14181f 0%, #050608 100%) fixed;
+            min-height: 100vh;
+            color: #f5f6f8;
+            margin: 0;
+            padding: 20px 16px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+        }
+
+        /* ===== Header ===== */
+        header.app-head {
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+            margin-bottom: 18px;
+        }
+        header.app-head h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: .04em;
+            margin: 0 0 4px;
+            text-transform: uppercase;
+        }
+        header.app-head h1 span { color: var(--accent-gold); }
+        header.app-head p { margin: 0; font-size: .8rem; color: #8b95a3; }
+
+        /* ===== Auth strip ===== */
+        .auth-strip {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 12px;
+        }
+        .auth-strip small { color: #8b95a3; font-size: .75rem; }
+
+        /* ===== Tabs ===== */
+        .tabs {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .tabs button {
+            flex: 1;
+            padding: 12px 10px;
+            font-size: .8rem;
+            font-weight: 700;
+            letter-spacing: .03em;
+            text-transform: uppercase;
+            color: #8b95a3;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: color var(--d-enter) var(--ease),
+                        background var(--d-enter) var(--ease),
+                        border-color var(--d-enter) var(--ease);
+        }
+        .tabs button:hover { color: #f5f6f8; }
+        .tabs button[aria-selected="true"] {
+            color: var(--primary-navy);
+            background: var(--accent-gold);
+            border-color: var(--accent-gold);
+        }
+
+        /* ===== Panels ===== */
+        .panel {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 16px;
+            padding: 18px;
+        }
+        .panel[hidden] { display: none; }
+
+        /* ===== Search ===== */
+        .search-wrap { position: relative; margin-bottom: 6px; }
+        .search-wrap input {
+            width: 100%;
+            padding: 14px 44px 14px 16px;
+            font-size: 1rem;
+            color: #f5f6f8;
+            background: rgba(0, 0, 0, .35);
+            border: 1px solid rgba(255, 255, 255, .14);
+            border-radius: 12px;
+            outline: none;
+            transition: border-color var(--d-enter) var(--ease);
+        }
+        .search-wrap input:focus { border-color: var(--accent-gold); }
+        .search-wrap input::placeholder { color: #6c7480; }
+        .search-clear {
+            position: absolute;
+            right: 8px; top: 50%;
+            transform: translateY(-50%);
+            width: 30px; height: 30px;
+            display: none;
+            place-items: center;
+            font-size: 1.1rem;
+            color: #8b95a3;
+            background: none; border: 0; cursor: pointer;
+        }
+        .search-clear.is-shown { display: grid; }
+        .search-meta { font-size: .72rem; color: #6c7480; margin: 0 0 14px 2px; min-height: 1em; }
+
+        /* ===== Tutor rows ===== */
+        .tutor-list { list-style: none; margin: 0; padding: 0; }
+        .tutor-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            transition: background var(--d-enter) var(--ease);
+        }
+        .tutor-row:hover { background: rgba(255, 255, 255, .05); }
+        .tutor-row + .tutor-row { margin-top: 4px; }
+        .tutor-row.is-picked {
+            background: rgba(212, 175, 55, .12);
+            border-color: rgba(212, 175, 55, .45);
+        }
+
+        .avatar {
+            width: 48px; height: 48px;
+            flex: 0 0 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #232a33;
+            border: 1px solid rgba(255, 255, 255, .12);
+        }
+        .avatar-fallback {
+            display: grid;
+            place-items: center;
+            font-size: .95rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        .tutor-main { flex: 1 1 auto; min-width: 0; }
+        .tutor-name { font-size: .92rem; font-weight: 700; }
+        .tutor-name mark {
+            background: rgba(212, 175, 55, .3);
+            color: inherit;
+            border-radius: 3px;
+            padding: 0 1px;
+        }
+        .tutor-bio {
+            font-size: .76rem;
+            color: #8b95a3;
+            margin-top: 2px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        .tutor-bio.is-placeholder { color: #6c7480; font-style: italic; }
+        .badge {
+            display: inline-block;
+            font-size: .6rem;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 999px;
+            margin-left: 6px;
+            vertical-align: 1px;
+            background: rgba(231, 76, 60, .18);
+            color: #ff9c91;
+        }
+        .badge-photos {
+            background: rgba(212, 175, 55, .18);
+            color: var(--accent-gold);
+        }
+
+        .tutor-actions { display: flex; gap: 6px; flex: 0 0 auto; }
+
+        /* ===== Buttons ===== */
+        button {
+            font-family: inherit;
+            border-radius: 10px;
+            border: 0;
+            cursor: pointer;
+            transition: transform var(--d-exit) var(--ease),
+                        filter var(--d-exit) var(--ease);
+        }
+        button:active { transform: scale(.97); }
+        button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+        .btn-primary {
+            padding: 10px 16px;
+            font-size: .8rem;
+            font-weight: 700;
+            color: var(--primary-navy);
+            background: var(--accent-gold);
+        }
+        .btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+        .btn-ghost {
+            padding: 10px 14px;
+            font-size: .78rem;
+            font-weight: 600;
+            color: #cdd4dd;
+            background: rgba(255, 255, 255, .07);
+            border: 1px solid rgba(255, 255, 255, .12);
+        }
+        .btn-ghost:hover:not(:disabled) { background: rgba(255, 255, 255, .12); }
+        .btn-sm { padding: 7px 11px; font-size: .72rem; }
+
+        /* ===== Selection tray ===== */
+        .tray {
+            position: sticky;
+            bottom: 12px;
+            margin-top: 16px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            background: rgba(26, 42, 58, .96);
+            border: 1px solid rgba(212, 175, 55, .4);
+            border-radius: 14px;
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            transform: translateY(8px);
+            pointer-events: none;
+            transition: opacity var(--d-enter) var(--ease),
+                        transform var(--d-enter) var(--ease);
+        }
+        .tray.is-shown { opacity: 1; transform: none; pointer-events: auto; }
+        .tray-count { font-size: .8rem; font-weight: 700; flex: 1 1 auto; }
+
+        /* ===== Empty / hint states ===== */
+        .empty {
+            padding: 28px 10px;
+            text-align: center;
+            color: #6c7480;
+            font-size: .85rem;
+        }
+        .suggestions { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+        .suggestions button {
+            padding: 6px 12px;
+            font-size: .75rem;
+            color: var(--accent-gold);
+            background: rgba(212, 175, 55, .12);
+            border: 1px solid rgba(212, 175, 55, .35);
+        }
+
+        /* ===== Section headers in View All ===== */
+        .alpha-head {
+            font-size: .7rem;
+            font-weight: 800;
+            letter-spacing: .12em;
+            color: var(--accent-gold);
+            padding: 14px 10px 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, .07);
+            margin-bottom: 6px;
+        }
+
+        /* ===== Admin ===== */
+        .admin-block {
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 12px;
+            margin-bottom: 14px;
+        }
+        .admin-block h3 {
+            margin: 0 0 4px;
+            font-size: .85rem;
+            font-weight: 800;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+        .admin-block p { margin: 0 0 12px; font-size: .78rem; color: #8b95a3; line-height: 1.5; }
+        .admin-block input[type="file"] { display: none; }
+
+        .progress {
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .1);
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .progress[hidden] { display: none; }
+        .progress span {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: var(--accent-gold);
+            transition: width 180ms linear;
+        }
+        .import-log {
+            margin-top: 12px;
+            max-height: 220px;
+            overflow-y: auto;
+            font-size: .72rem;
+            line-height: 1.6;
+            color: #8b95a3;
+            font-variant-numeric: tabular-nums;
+        }
+        .import-log[hidden] { display: none; }
+        .import-log b { color: #f5f6f8; }
+        .import-log .warn { color: #ffcf7a; }
+        .import-log .bad { color: #ff9c91; }
+
+        .admin-emails { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+        .admin-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            font-size: .74rem;
+            background: rgba(255, 255, 255, .07);
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 999px;
+        }
+        .admin-chip button { background: none; color: #ff9c91; font-size: .9rem; padding: 0 2px; }
+        .admin-row { display: flex; gap: 8px; }
+        .admin-row input {
+            flex: 1;
+            padding: 10px 12px;
+            font-size: .85rem;
+            color: #f5f6f8;
+            background: rgba(0, 0, 0, .35);
+            border: 1px solid rgba(255, 255, 255, .14);
+            border-radius: 10px;
+            outline: none;
+        }
+
+        /* ===== Modals ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .72);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            opacity: 0;
+            transition: opacity var(--d-exit) var(--ease);
+        }
+        .modal-overlay.is-open { opacity: 1; }
+        .modal {
+            width: 100%;
+            max-width: 420px;
+            max-height: 92vh;
+            overflow-y: auto;
+            background: #1a2028;
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 18px;
+            padding: 20px;
+            text-align: center;
+            transform: translateY(10px) scale(.98);
+            transition: transform var(--d-enter) var(--ease);
+        }
+        .modal-overlay.is-open .modal { transform: none; }
+        .modal h3 { margin: 0 0 4px; font-size: 1.05rem; font-weight: 800; }
+        .modal .step { font-size: .72rem; color: var(--accent-gold); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+        .modal img.preview {
+            width: 100%;
+            max-height: 46vh;
+            object-fit: contain;
+            border-radius: 12px;
+            margin: 14px 0 10px;
+            background: #0d1117;
+        }
+        /* Photo option picker — only rendered when a tutor has more than one */
+        .photo-opts {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        .photo-opts[hidden] { display: none; }
+        .photo-opt {
+            padding: 6px 14px;
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            color: #8b95a3;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .12);
+            transition: color var(--d-exit) var(--ease),
+                        background var(--d-exit) var(--ease),
+                        border-color var(--d-exit) var(--ease);
+        }
+        .photo-opt:hover { color: #f5f6f8; }
+        .photo-opt.is-active {
+            color: var(--primary-navy);
+            background: var(--accent-gold);
+            border-color: var(--accent-gold);
+        }
+
+        .caption-box {
+            text-align: left;
+            font-size: .8rem;
+            line-height: 1.55;
+            color: #cdd4dd;
+            background: rgba(0, 0, 0, .35);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 10px;
+            padding: 12px;
+            max-height: 22vh;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .save-hint { font-size: .74rem; color: #8b95a3; margin: 10px 0 0; line-height: 1.5; }
+        .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+        .modal-actions button { flex: 1; padding: 12px; font-size: .82rem; font-weight: 700; }
+        .modal p.msg { font-size: .85rem; color: #cdd4dd; line-height: 1.55; margin: 8px 0 0; }
+
+        /* ===== Toast ===== */
+        #toast {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            transform: translate(-50%, 20px);
+            z-index: 300;
+            padding: 12px 20px;
+            font-size: .82rem;
+            font-weight: 600;
+            color: var(--primary-navy);
+            background: var(--accent-gold);
+            border-radius: 999px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--d-enter) var(--ease),
+                        transform var(--d-enter) var(--ease);
+        }
+        #toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+
+        footer.app-credits {
+            margin-top: 26px;
+            font-size: .68rem;
+            color: #4c545f;
+            letter-spacing: .04em;
+        }
+
+        @media (max-width: 560px) {
+            .tabs button { font-size: .68rem; padding: 11px 6px; }
+            .tutor-actions { flex-direction: column; }
+            .panel { padding: 14px; }
+
+            /* Send is the whole point of the sheet, so it has to be reachable
+               without scrolling on a portrait phone. Give the photo and the
+               caption less room rather than pushing the buttons off-screen. */
+            .modal { padding: 16px; }
+            .modal img.preview { max-height: 30vh; margin: 12px 0 8px; }
+            .caption-box { max-height: 16vh; }
+            .modal-actions { margin-top: 12px; }
+            .modal-actions button { padding: 11px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="app-head">
+        <h1>Genius <span>Sell Bios</span></h1>
+        <p>Tutor photo + bio, ready to send</p>
+    </header>
+
+    <div class="auth-strip">
+        <small id="userStatus">Connecting…</small>
+        <button class="btn-ghost btn-sm" id="authBtn">Login</button>
+    </div>
+
+    <nav class="tabs" role="tablist">
+        <button role="tab" id="tab-send" aria-selected="true" aria-controls="panel-send">Send Sell Bio</button>
+        <button role="tab" id="tab-all" aria-selected="false" aria-controls="panel-all">View All Sell Bios</button>
+        <button role="tab" id="tab-admin" aria-selected="false" aria-controls="panel-admin" hidden>Admin</button>
+    </nav>
+
+    <!-- ===================== SEND ===================== -->
+    <section class="panel" id="panel-send" role="tabpanel" aria-labelledby="tab-send">
+        <div class="search-wrap">
+            <input type="search" id="searchInput" placeholder="Search tutors — try &quot;ty&quot;"
+                   autocomplete="off" autocapitalize="off" spellcheck="false">
+            <button class="search-clear" id="searchClear" aria-label="Clear search">&times;</button>
+        </div>
+        <p class="search-meta" id="searchMeta"></p>
+        <ul class="tutor-list" id="searchResults"></ul>
+        <div class="tray" id="tray">
+            <span class="tray-count" id="trayCount">0 selected</span>
+            <button class="btn-ghost btn-sm" id="trayClear">Clear</button>
+            <button class="btn-primary btn-sm" id="traySend">Send selected</button>
+        </div>
+    </section>
+
+    <!-- ===================== VIEW ALL ===================== -->
+    <section class="panel" id="panel-all" role="tabpanel" aria-labelledby="tab-all" hidden>
+        <p class="search-meta" id="allMeta"></p>
+        <div id="allResults"></div>
+    </section>
+
+    <!-- ===================== ADMIN ===================== -->
+    <section class="panel" id="panel-admin" role="tabpanel" aria-labelledby="tab-admin" hidden>
+
+        <div class="admin-block">
+            <h3>1 · Import tutor photos</h3>
+            <p>Select every photo in your Staff Photos folder at once. Filenames are parsed
+               automatically — <b>Resized</b> is preferred over <b>Full</b>, brand tags
+               (GI / EL / GPL) and stray punctuation are stripped, and duplicates collapse to
+               one tutor. Photos are downscaled in your browser before upload, so nothing
+               huge is stored. Existing bios are never overwritten by this step.</p>
+            <button class="btn-primary" id="photoPickBtn">Choose photos…</button>
+            <input type="file" id="photoInput" multiple accept="image/*">
+            <div class="progress" id="photoProgress" hidden><span></span></div>
+            <div class="import-log" id="photoLog" hidden></div>
+        </div>
+
+        <div class="admin-block">
+            <h3>2 · Import sell bios from Excel</h3>
+            <p>First column = tutor name, second column = bio. A header row is detected and
+               skipped. Names are matched to existing tutors; anything unmatched is listed
+               rather than silently dropped, and nothing is written until you confirm.</p>
+            <button class="btn-primary" id="bioPickBtn">Choose spreadsheet…</button>
+            <input type="file" id="bioInput" accept=".xlsx,.xlsm,.xls,.csv">
+            <div class="progress" id="bioProgress" hidden><span></span></div>
+            <div class="import-log" id="bioLog" hidden></div>
+        </div>
+
+        <div class="admin-block" id="adminsBlock" hidden>
+            <h3>3 · Who can upload</h3>
+            <p>This is the same list the Firestore security rules read, so the button and the
+               permission can never disagree. Only you can edit it.</p>
+            <div class="admin-emails" id="adminEmails"></div>
+            <div class="admin-row">
+                <input type="email" id="adminEmailInput" placeholder="name@geniuspremium.com" autocomplete="off">
+                <button class="btn-primary btn-sm" id="adminAddBtn">Add</button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="app-credits">developed by zak.k &middot; envisioned by james.r</footer>
+
+    <!-- ===================== MODALS ===================== -->
+    <div class="modal-overlay" id="sendSheet">
+        <div class="modal">
+            <p class="step" id="sendStep"></p>
+            <h3 id="sendName">Tutor</h3>
+            <div class="photo-opts" id="sendOptions" hidden></div>
+            <img class="preview" id="sendImg" alt="">
+            <div class="caption-box" id="sendCaption"></div>
+            <p class="save-hint" id="sendHint"></p>
+            <div class="modal-actions">
+                <button class="btn-ghost" id="sendCopy">Copy caption</button>
+                <button class="btn-primary" id="sendShare">Send</button>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-ghost" id="sendClose">Close</button>
+                <button class="btn-ghost" id="sendNext" hidden>Next tutor &rarr;</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="dialogModal">
+        <div class="modal">
+            <h3 id="dialogTitle">Title</h3>
+            <p class="msg" id="dialogMessage">Message</p>
+            <div class="modal-actions">
+                <button class="btn-ghost" id="dialogCancel">Cancel</button>
+                <button class="btn-primary" id="dialogConfirm">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut }
+    from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, onSnapshot }
+    from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+// Config comes from the SETTINGS block at the top of this file. This app has
+// its own Firebase project, separate from the schedule maker, so nothing here
+// can affect that data.
+const firebaseConfig = window.GENIUS.firebase;
+
+// Fail loudly and usefully rather than throwing an opaque Firebase error.
+if (String(firebaseConfig.apiKey).startsWith('PASTE_')) {
+    document.body.insertAdjacentHTML('afterbegin', `
+        <div style="max-width:640px;margin:40px auto;padding:24px;border-radius:14px;
+                    background:#2a1d1d;border:1px solid #e74c3c;line-height:1.6">
+            <h2 style="margin:0 0 8px;font-size:1.1rem">Setup not finished</h2>
+            <p style="margin:0;font-size:.88rem;color:#e8c9c4">
+                The Firebase config is still the placeholder. Open
+                <b>index.html</b>, find the SETTINGS block at the top, and paste
+                your project's config over the <code>PASTE_…</code> values.
+                <br><br>See <b>README.md</b> step A6 and B1.
+            </p>
+        </div>`);
+    throw new Error('Firebase config not set — see README.md step B1');
+}
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+const APP_NS = 'genius-sellbios';
+
+const tutorsCol   = () => collection(db, 'artifacts', APP_NS, 'public', 'data', 'tutors');
+const tutorDoc    = id => doc(db, 'artifacts', APP_NS, 'public', 'data', 'tutors', id);
+// One document per photo option, not per tutor: 35 of the 220 have both an
+// EL and a GI photo, and several ~200KB images will not fit in one 1MiB doc.
+// The composite id keeps them in the same collection, so the security rules
+// need no special case.
+const photoDoc    = (tutorId, variantId) =>
+    doc(db, 'artifacts', APP_NS, 'public', 'data', 'tutorPhotos', `${tutorId}::${variantId}`);
+const accessDoc   = () => doc(db, 'artifacts', APP_NS, 'public', 'data', 'config', 'access');
+
+const CACHE_KEY = 'geniusSellBios_roster_v1';
+
+let currentUser = null;
+let isOwner = false, isBioAdmin = false;
+let roster = [];                 // [{ id, name, bio, thumb, bioPlaceholder, ... }]
+let bioAdmins = [];
+const cardCache = new Map();     // id -> dataURL, so re-sending costs no reads
+
+// ================================================================
+// ===== SMALL HELPERS                                        =====
+// ================================================================
+const $ = id => document.getElementById(id);
+
+function nextFrame(fn) {
+    let ran = false;
+    const once = () => { if (!ran) { ran = true; fn(); } };
+    requestAnimationFrame(once);
+    setTimeout(once, 120);   // rAF never fires in a backgrounded tab
+}
+
+const prefersReducedMotion = () =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MODAL_EXIT_MS = 150;
+
+function openOverlay(el) {
+    if (el._closeTimer) { clearTimeout(el._closeTimer); el._closeTimer = null; }
+    el.style.display = 'flex';
+    void el.offsetWidth;
+    el.classList.add('is-open');
+}
+function closeOverlay(el) {
+    el.classList.remove('is-open');
+    if (el._closeTimer) clearTimeout(el._closeTimer);
+    el._closeTimer = setTimeout(() => {
+        el.style.display = 'none';
+        el._closeTimer = null;
+    }, prefersReducedMotion() ? 0 : MODAL_EXIT_MS);
+}
+
+let toastTimer = null;
+function showToast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('is-visible');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('is-visible'), 2600);
+}
+
+function showDialog(title, message, isConfirm, cb) {
+    $('dialogTitle').textContent = title;
+    $('dialogMessage').textContent = message;
+    $('dialogCancel').style.display = isConfirm ? '' : 'none';
+
+    const fresh = btn => { const c = btn.cloneNode(true); btn.replaceWith(c); return c; };
+    const ok = fresh($('dialogConfirm'));
+    const no = fresh($('dialogCancel'));
+    ok.onclick = () => { closeOverlay($('dialogModal')); cb && cb(true); };
+    no.onclick = () => { closeOverlay($('dialogModal')); cb && cb(false); };
+    openOverlay($('dialogModal'));
+}
+
+const escapeHtml = s => String(s).replace(/[&<>"']/g,
+    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// ================================================================
+// ===== NAME NORMALISATION                                   =====
+// ================================================================
+// The Staff Photos folder uses a dozen naming conventions:
+//   "Aidan Zeeman Full.jpg"          "Alec Scheepers - resized.jpg"
+//   "Christiaan_Botes_-_Full.jpg"    "Matthew Osche's - Full.jpeg"
+//   "Murunwa Mlaudzi Resized..jpg"   "Zoe Nel- GI Resized.jpg"
+//   "Sage Seef GI Original.jpg"      "Daniela Pacheco EL Resize.jpg"
+// GI / EL / GPL are brand tags, not names. Everything below exists to get
+// from any of those to one stable key per person.
+
+const BRAND_TAGS = ['gi', 'el', 'gpl', 'tutor', 'new'];
+const SIZE_FULL  = ['full', 'original'];
+const SIZE_SMALL = ['resized', 'resize'];
+
+const fold = s => String(s || '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+function parseFilename(filename) {
+    const dot = filename.lastIndexOf('.');
+    let stem = dot > 0 ? filename.slice(0, dot) : filename;
+    const ext = dot > 0 ? filename.slice(dot + 1).toLowerCase() : '';
+
+    stem = stem
+        .replace(/[‘’]/g, "'")
+        .replace(/_/g, ' ')
+        .replace(/'s\b/gi, '')
+        .replace(/\s*-\s*/g, ' ')
+        .replace(/\.+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    let size = null;
+    const nameWords = [], tags = [];
+    for (const w of stem.split(' ')) {
+        const lw = fold(w);
+        if (SIZE_SMALL.includes(lw))      size = 'resized';
+        else if (SIZE_FULL.includes(lw))  size = size || 'full';
+        else if (BRAND_TAGS.includes(lw)) tags.push(lw);
+        else if (w)                       nameWords.push(w);
+    }
+    return { filename, ext, size, tags, name: nameWords.join(' ').trim() };
+}
+
+const nameKey = name => fold(name).replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim();
+
+// A "variant" is one photo OPTION for a person — the brand the shot was taken
+// for. Angela Webb has an EL and a GI photo; those are two options, not two
+// people. Full vs Resized of the SAME brand is one option at two sizes.
+// Near-duplicate people (Zoe Nel / Zoe Nell, Arianna / Arianna S) are left as
+// separate tutors on purpose: guessing a merge is worse than showing both.
+const VARIANT_ORDER = ['gi', 'main', 'el', 'gpl', 'tutor'];
+
+const variantId = tags =>
+    tags.length ? tags.slice().sort().join('+') : 'main';
+
+function variantLabel(id) {
+    if (id === 'main') return 'Main';
+    return id.split('+')
+        .map(t => t === 'gi' || t === 'el' || t === 'gpl'
+            ? t.toUpperCase()
+            : t.charAt(0).toUpperCase() + t.slice(1))
+        .join(' ');
+}
+
+const variantRank = id => {
+    const i = VARIANT_ORDER.indexOf(id.split('+')[0]);
+    return i < 0 ? VARIANT_ORDER.length : i;
+};
+
+// ================================================================
+// ===== SEARCH                                               =====
+// ================================================================
+// "ty" must surface Tyler, Chrystyler and Styles — so a plain substring
+// match anywhere in the name is the primary signal, not a prefix match.
+// Higher score sorts first.
+function scoreMatch(query, name) {
+    const q = fold(query).trim();
+    if (!q) return 0;
+    const n = fold(name);
+    if (n === q) return 1000;
+
+    const idx = n.indexOf(q);
+    if (idx === 0) return 900;
+    if (idx > 0) {
+        // Word-initial hit ranks above mid-word ("Tyler" over "Chrystyler").
+        const wordStart = n[idx - 1] === ' ';
+        return (wordStart ? 800 : 700) - Math.min(idx, 60);
+    }
+    // Loose matching below here is gated on query length. On a 2-3 character
+    // query it is pure noise: "zoe" was matching Jamie Ho and Nickson He on
+    // edit distance, and Zane Oosthuizen as a subsequence.
+    if (q.length < 4) return 0;
+
+    if (isSubsequence(q, n)) return 400;
+
+    // Last resort: a near-miss on any single word, so a typo still lands.
+    // Distance 2 only once the query is long enough for it to mean something
+    // (it covers transpositions like "tylre" -> "tyler").
+    const maxDist = q.length >= 5 ? 2 : 1;
+    for (const w of n.split(' ')) {
+        if (Math.abs(w.length - q.length) <= maxDist && levenshtein(q, w) <= maxDist) return 200;
+    }
+    return 0;
+}
+
+function isSubsequence(q, n) {
+    let i = 0;
+    for (const ch of n) if (ch === q[i] && ++i === q.length) return true;
+    return i === q.length;
+}
+
+function levenshtein(a, b) {
+    let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+    for (let i = 1; i <= a.length; i++) {
+        const cur = [i];
+        for (let j = 1; j <= b.length; j++) {
+            cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1,
+                              prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        }
+        prev = cur;
+    }
+    return prev[b.length];
+}
+
+function searchRoster(query) {
+    if (!query.trim()) return { hits: [], suggestions: [] };
+
+    const scored = roster
+        .map(t => ({ t, s: scoreMatch(query, t.name) }))
+        .filter(x => x.s > 0)
+        .sort((a, b) => b.s - a.s || a.t.name.localeCompare(b.t.name));
+
+    if (scored.length) return { hits: scored.map(x => x.t), suggestions: [] };
+
+    // No hits: offer the closest names rather than a dead end.
+    const q = fold(query).trim();
+    const near = roster
+        .map(t => {
+            const words = fold(t.name).split(' ');
+            const best = Math.min(...words.map(w => levenshtein(q, w)), levenshtein(q, fold(t.name)));
+            return { t, d: best };
+        })
+        .sort((a, b) => a.d - b.d)
+        .slice(0, 5)
+        .filter(x => x.d <= Math.max(3, Math.ceil(q.length / 2)));
+
+    return { hits: [], suggestions: near.map(x => x.t) };
+}
+
+function highlight(name, query) {
+    const q = fold(query).trim();
+    if (!q) return escapeHtml(name);
+    const idx = fold(name).indexOf(q);
+    if (idx < 0) return escapeHtml(name);
+    return escapeHtml(name.slice(0, idx))
+         + '<mark>' + escapeHtml(name.slice(idx, idx + q.length)) + '</mark>'
+         + escapeHtml(name.slice(idx + q.length));
+}
+
+// ================================================================
+// ===== IMAGE PROCESSING                                     =====
+// ================================================================
+// Two derivatives per tutor:
+//   card  1200px JPEG — previewed and shared. JPEG on purpose: WhatsApp
+//         has been known to treat WebP as a sticker.
+//   thumb   96px JPEG — list avatars. Kept tiny because all 220 land in
+//         one Firestore read and get cached in localStorage (5MB cap).
+const CARD_MAX = 1200, CARD_Q = 0.85;
+const THUMB_MAX = 96,  THUMB_Q = 0.62;
+
+// Measured against the real Staff Photos folder: the "Resized" files are
+// already 800px / 142KB at the median, and 218 of 219 are under CARD_MAX.
+// Re-encoding those through a canvas would throw away a generation of
+// quality to save nothing, so anything already small enough is stored
+// byte-for-byte and only genuine oversize photos get re-encoded.
+const PASSTHROUGH_MAX_BYTES = 400 * 1024;
+// WebP is deliberately excluded: WhatsApp has been known to treat a WebP
+// image as a sticker, so those get re-encoded to JPEG instead.
+const PASSTHROUGH_TYPES = /^(jpe?g|png)$/;
+
+async function loadBitmap(file) {
+    // createImageBitmap honours EXIF orientation; bare drawImage does not,
+    // and these are phone photos, so sideways portraits are guaranteed.
+    if (typeof createImageBitmap === 'function') {
+        try {
+            return await createImageBitmap(file, { imageOrientation: 'from-image' });
+        } catch { /* fall through */ }
+    }
+    return await new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload  = () => { URL.revokeObjectURL(url); resolve(img); };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decode failed')); };
+        img.src = url;
+    });
+}
+
+function toDataURL(bitmap, maxEdge, quality) {
+    const w = bitmap.width, h = bitmap.height;
+    const scale = Math.min(1, maxEdge / Math.max(w, h));
+    const cw = Math.max(1, Math.round(w * scale));
+    const ch = Math.max(1, Math.round(h * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = cw; canvas.height = ch;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(bitmap, 0, 0, cw, ch);
+    return canvas.toDataURL('image/jpeg', quality);
+}
+
+function fileToDataURL(file) {
+    return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload  = () => resolve(r.result);
+        r.onerror = () => reject(new Error('could not read file'));
+        r.readAsDataURL(file);
+    });
+}
+
+// basename has no extension: it is derived from the stored image's real type
+// so the file WhatsApp receives is not, say, a PNG called .jpg.
+async function dataURLtoFile(dataURL, basename) {
+    const blob = await (await fetch(dataURL)).blob();
+    const type = blob.type || 'image/jpeg';
+    const ext = type === 'image/png' ? 'png' : type === 'image/webp' ? 'webp' : 'jpg';
+    return new File([blob], `${basename}.${ext}`, { type });
+}
+
+// ================================================================
+// ===== PLACEHOLDER BIOS                                     =====
+// ================================================================
+// Zak does not have the real bios yet. These are deliberately obvious
+// filler — flagged with a PLACEHOLDER badge everywhere so nobody sends
+// one by accident — and they are generated from the name so a given
+// tutor always gets the same text. The Excel import overwrites them.
+const FILLER = {
+    open: ['is a standout member of the Genius Premium team',
+           'brings real energy to every lesson',
+           'has been a favourite with our families',
+           'is one of our most requested tutors',
+           'combines patience with genuinely high standards'],
+    mid:  ['Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.',
+           'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.',
+           'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum.',
+           'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur.',
+           'Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae.'],
+    close:['Placeholder text — replace via the Excel import.',
+           'Placeholder copy pending the real bio.',
+           'This bio has not been written yet.']
+};
+
+function hashString(s) {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+    }
+    return Math.abs(h);
+}
+
+function placeholderBio(name) {
+    const h = hashString(nameKey(name));
+    const pick = (arr, salt) => arr[(h >> salt) % arr.length];
+    return `${name} ${pick(FILLER.open, 0)}. ${pick(FILLER.mid, 3)} ${pick(FILLER.mid, 7)} `
+         + `${pick(FILLER.close, 11)}`;
+}
+
+// ================================================================
+// ===== AUTH                                                 =====
+// ================================================================
+onAuthStateChanged(auth, async user => {
+    currentUser = user;
+    const btn = $('authBtn'), status = $('userStatus');
+
+    if (user && !user.isAnonymous) {
+        const email = (user.email || '').toLowerCase();
+        isOwner = email === String(window.GENIUS.OWNER_EMAIL).toLowerCase();
+        status.textContent = `Signed in as ${email}`;
+        btn.textContent = 'Logout';
+        btn.onclick = () => signOut(auth).then(() => window.location.reload());
+
+        await loadAccess();
+        subscribeRoster();
+    } else {
+        isOwner = isBioAdmin = false;
+        status.textContent = 'Not signed in';
+        btn.textContent = 'Login with Google';
+        btn.onclick = () => signInWithPopup(auth, new GoogleAuthProvider())
+            .catch(err => {
+                console.error(err);
+                showDialog('Login failed', 'Could not connect to Google. Please try again.', false);
+            });
+        renderFromCache();
+    }
+    applyAdminVisibility();
+});
+
+async function loadAccess() {
+    try {
+        const snap = await getDoc(accessDoc());
+        bioAdmins = (snap.exists() && Array.isArray(snap.data().bioAdmins))
+            ? snap.data().bioAdmins.map(e => String(e).toLowerCase()) : [];
+    } catch (e) {
+        console.warn('Could not read the admin list', e);
+        bioAdmins = [];
+    }
+    const email = (currentUser?.email || '').toLowerCase();
+    isBioAdmin = isOwner || bioAdmins.includes(email);
+}
+
+function applyAdminVisibility() {
+    // UI gating only — the security rules are what actually enforce this.
+    $('tab-admin').hidden = !isBioAdmin;
+    $('adminsBlock').hidden = !isOwner;
+    if (!isBioAdmin && $('tab-admin').getAttribute('aria-selected') === 'true') selectTab('send');
+    if (isOwner) renderAdminEmails();
+}
+
+// ================================================================
+// ===== DATA                                                 =====
+// ================================================================
+let unsubscribeRoster = null;
+
+function subscribeRoster() {
+    if (unsubscribeRoster) unsubscribeRoster();
+    unsubscribeRoster = onSnapshot(tutorsCol(), snap => {
+        roster = [];
+        snap.forEach(d => roster.push({ id: d.id, ...d.data() }));
+        roster.sort((a, b) => a.name.localeCompare(b.name));
+        cacheRoster();
+        renderAll();
+        renderSearch();
+    }, err => {
+        console.error(err);
+        // Almost always the security rules rejecting the read.
+        $('allMeta').textContent =
+            'Could not load tutors — your account may not have read access yet.';
+        renderFromCache();
+    });
+}
+
+function cacheRoster() {
+    try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(roster));
+    } catch (e) {
+        // Quota. The app still works online; only the offline view is lost.
+        console.warn('Roster cache skipped (storage full)', e);
+    }
+}
+
+function renderFromCache() {
+    try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return;
+        roster = JSON.parse(raw);
+        renderAll();
+        renderSearch();
+    } catch { /* ignore a corrupt cache */ }
+}
+
+async function getCard(tutorId, vId) {
+    const key = `${tutorId}::${vId}`;
+    if (cardCache.has(key)) return cardCache.get(key);
+    const snap = await getDoc(photoDoc(tutorId, vId));
+    if (!snap.exists() || !snap.data().card) throw new Error('no photo stored');
+    const card = snap.data().card;
+    cardCache.set(key, card);
+    return card;
+}
+
+// Tutors imported before photo options existed have no photos array.
+const photoOptions = t => (Array.isArray(t.photos) && t.photos.length)
+    ? t.photos
+    : [{ id: 'main', label: 'Main' }];
+
+// ================================================================
+// ===== RENDER                                               =====
+// ================================================================
+const BIO_SNIPPET = 150;
+
+function snippet(bio) {
+    const clean = String(bio || '').replace(/\s+/g, ' ').trim();
+    if (!clean) return 'No bio yet.';
+    return clean.length > BIO_SNIPPET ? clean.slice(0, BIO_SNIPPET).trimEnd() + '…' : clean;
+}
+
+function initials(name) {
+    return name.split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+}
+
+function avatarHtml(t) {
+    return t.thumb
+        ? `<img class="avatar" src="${t.thumb}" alt="">`
+        : `<div class="avatar avatar-fallback" aria-hidden="true">${escapeHtml(initials(t.name))}</div>`;
+}
+
+function rowHtml(t, query, picked) {
+    return `<li class="tutor-row${picked ? ' is-picked' : ''}" data-id="${escapeHtml(t.id)}">
+        ${avatarHtml(t)}
+        <div class="tutor-main">
+            <div class="tutor-name">${highlight(t.name, query || '')}${
+                t.bioPlaceholder ? '<span class="badge">placeholder</span>' : ''}${
+                photoOptions(t).length > 1
+                    ? `<span class="badge badge-photos">${photoOptions(t).length} photos</span>` : ''}</div>
+            <div class="tutor-bio${t.bioPlaceholder ? ' is-placeholder' : ''}">${escapeHtml(snippet(t.bio))}</div>
+        </div>
+        <div class="tutor-actions">
+            <button class="btn-ghost btn-sm" data-act="pick">${picked ? 'Remove' : 'Add'}</button>
+            <button class="btn-primary btn-sm" data-act="send">Send</button>
+        </div>
+    </li>`;
+}
+
+const picked = new Set();
+
+function renderSearch() {
+    const query = $('searchInput').value;
+    const list = $('searchResults'), meta = $('searchMeta');
+    $('searchClear').classList.toggle('is-shown', !!query);
+
+    if (!query.trim()) {
+        list.innerHTML = `<div class="empty">Start typing a tutor's name.<br>
+            Partial matches anywhere in the name work — "ty" finds Tyler and Chrystyler.</div>`;
+        meta.textContent = `${roster.length} tutors available`;
+        return;
+    }
+
+    const { hits, suggestions } = searchRoster(query);
+
+    if (hits.length) {
+        meta.textContent = `${hits.length} match${hits.length === 1 ? '' : 'es'}`;
+        list.innerHTML = hits.map(t => rowHtml(t, query, picked.has(t.id))).join('');
+        return;
+    }
+
+    meta.textContent = 'No matches';
+    list.innerHTML = `<div class="empty">Nothing matched “${escapeHtml(query)}”.${
+        suggestions.length ? `<div class="suggestions">${
+            suggestions.map(t => `<button data-suggest="${escapeHtml(t.name)}">${escapeHtml(t.name)}</button>`).join('')
+        }</div>` : ''}</div>`;
+}
+
+function renderAll() {
+    const wrap = $('allResults');
+    if (!roster.length) {
+        wrap.innerHTML = `<div class="empty">No tutors yet.${
+            isBioAdmin ? ' Use the Admin tab to import photos.' : ''}</div>`;
+        $('allMeta').textContent = '';
+        return;
+    }
+
+    $('allMeta').textContent = `${roster.length} tutors, A–Z`;
+
+    let html = '', letter = '';
+    for (const t of roster) {
+        const first = (fold(t.name)[0] || '#').toUpperCase();
+        const group = /[A-Z]/.test(first) ? first : '#';
+        if (group !== letter) {
+            if (letter) html += '</ul>';
+            html += `<div class="alpha-head">${group}</div><ul class="tutor-list">`;
+            letter = group;
+        }
+        html += rowHtml(t, '', picked.has(t.id));
+    }
+    html += '</ul>';
+    wrap.innerHTML = html;
+}
+
+function renderTray() {
+    const tray = $('tray');
+    tray.classList.toggle('is-shown', picked.size > 0);
+    $('trayCount').textContent = `${picked.size} selected`;
+}
+
+// ================================================================
+// ===== SEND FLOW                                            =====
+// ================================================================
+// The hard constraint: when a share payload carries a file, WhatsApp keeps
+// the image and usually discards the text. So the caption is ALSO copied to
+// the clipboard inside the same tap — one paste and it is there, on every
+// platform. Multi-send steps through one tutor at a time rather than
+// pretending a single share can carry several captions.
+let sendQueue = [], sendIndex = 0;
+
+async function startSend(ids) {
+    sendQueue = ids.map(id => roster.find(t => t.id === id)).filter(Boolean);
+    if (!sendQueue.length) return;
+
+    const placeholders = sendQueue.filter(t => t.bioPlaceholder);
+    if (placeholders.length) {
+        const names = placeholders.slice(0, 3).map(t => t.name).join(', ');
+        const more = placeholders.length > 3 ? ` and ${placeholders.length - 3} more` : '';
+        await new Promise(resolve => showDialog(
+            'Placeholder bio',
+            `${names}${more} ${placeholders.length === 1 ? 'has' : 'have'} filler text, not a real bio. `
+            + 'Send anyway?', true,
+            ok => resolve(ok ? null : (sendQueue = []))
+        ));
+        if (!sendQueue.length) return;
+    }
+
+    sendIndex = 0;
+    await showSendStep();
+}
+
+async function showSendStep() {
+    const t = sendQueue[sendIndex];
+    const sheet = $('sendSheet');
+
+    $('sendStep').textContent = sendQueue.length > 1
+        ? `Sending ${sendIndex + 1} of ${sendQueue.length}` : '';
+    $('sendName').textContent = t.name;
+    $('sendCaption').textContent = t.bio || '(no bio)';
+    $('sendNext').hidden = sendIndex >= sendQueue.length - 1;
+    openOverlay(sheet);
+
+    const options = photoOptions(t);
+    renderPhotoOptions(t, options);
+    await loadPhoto(t, options[0].id);
+}
+
+// Only shown when there is a genuine choice to make.
+function renderPhotoOptions(t, options) {
+    const wrap = $('sendOptions');
+    if (options.length < 2) { wrap.hidden = true; wrap.innerHTML = ''; return; }
+
+    wrap.hidden = false;
+    wrap.innerHTML = options.map((o, i) =>
+        `<button class="photo-opt${i === 0 ? ' is-active' : ''}" data-variant="${escapeHtml(o.id)}">
+            ${escapeHtml(o.label)}
+         </button>`).join('');
+
+    wrap.onclick = e => {
+        const btn = e.target.closest('[data-variant]');
+        if (!btn || btn.classList.contains('is-active')) return;
+        for (const b of wrap.children) b.classList.toggle('is-active', b === btn);
+        loadPhoto(t, btn.dataset.variant);
+    };
+}
+
+async function loadPhoto(t, vId) {
+    $('sendImg').removeAttribute('src');
+    $('sendHint').textContent = 'Loading photo…';
+    $('sendShare').disabled = true;
+
+    let card;
+    try {
+        card = await getCard(t.id, vId);
+    } catch (e) {
+        console.error(e);
+        $('sendHint').textContent = 'No photo stored for this option — the caption can still be copied.';
+        wireSendButtons(t, null);
+        return;
+    }
+
+    // A slower option can resolve after the user has already clicked another.
+    const active = $('sendOptions').querySelector('.is-active');
+    if (active && active.dataset.variant !== vId) return;
+
+    $('sendImg').src = card;
+    const file = await dataURLtoFile(card, t.name.replace(/\s+/g, '_'));
+    const canShareFile = !!(navigator.canShare && navigator.canShare({ files: [file] }));
+
+    $('sendShare').disabled = false;
+    $('sendShare').textContent = canShareFile ? 'Send' : 'Save photo';
+    $('sendHint').textContent = canShareFile
+        ? 'The caption is copied when you tap Send — paste it into WhatsApp\'s caption box.'
+        : 'Save or long-press the photo, then paste the copied caption in WhatsApp.';
+
+    wireSendButtons(t, file, canShareFile);
+}
+
+function wireSendButtons(t, file, canShareFile) {
+    const copy = async () => {
+        try {
+            await navigator.clipboard.writeText(t.bio || '');
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    $('sendCopy').onclick = async () =>
+        showToast(await copy() ? 'Caption copied ✓' : 'Could not copy — select the text instead');
+
+    $('sendShare').onclick = () => {
+        if (!file) return;
+        // Fire the clipboard write first so it lands inside this gesture,
+        // then share. Awaiting it before share() can cost the gesture on iOS.
+        copy();
+        if (canShareFile) {
+            navigator.share({ files: [file], text: t.bio || '', title: t.name })
+                .then(() => showToast('Shared — paste the caption ✓'))
+                .catch(err => { if (err && err.name !== 'AbortError') console.error(err); });
+        } else {
+            const url = URL.createObjectURL(file);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.name;
+            document.body.appendChild(a);   // Safari ignores detached anchors
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 10000);
+            showToast('Photo saved, caption copied ✓');
+        }
+    };
+}
+
+$('sendClose').onclick = () => { sendQueue = []; closeOverlay($('sendSheet')); };
+$('sendNext').onclick = () => { sendIndex++; showSendStep(); };
+$('sendSheet').addEventListener('click', e => {
+    if (e.target === $('sendSheet')) { sendQueue = []; closeOverlay($('sendSheet')); }
+});
+
+// ================================================================
+// ===== TABS + LIST EVENTS                                   =====
+// ================================================================
+function selectTab(which) {
+    for (const key of ['send', 'all', 'admin']) {
+        const on = key === which;
+        $('tab-' + key).setAttribute('aria-selected', on ? 'true' : 'false');
+        $('panel-' + key).hidden = !on;
+    }
+}
+$('tab-send').onclick  = () => selectTab('send');
+$('tab-all').onclick   = () => selectTab('all');
+$('tab-admin').onclick = () => selectTab('admin');
+
+function wireList(container) {
+    container.addEventListener('click', e => {
+        const suggest = e.target.closest('[data-suggest]');
+        if (suggest) {
+            $('searchInput').value = suggest.dataset.suggest;
+            renderSearch();
+            return;
+        }
+        const btn = e.target.closest('[data-act]');
+        if (!btn) return;
+        const id = btn.closest('.tutor-row')?.dataset.id;
+        if (!id) return;
+
+        if (btn.dataset.act === 'send') { startSend([id]); return; }
+
+        picked.has(id) ? picked.delete(id) : picked.add(id);
+        renderTray();
+        renderSearch();
+        renderAll();
+    });
+}
+wireList($('searchResults'));
+wireList($('allResults'));
+
+let searchDebounce = null;
+$('searchInput').addEventListener('input', () => {
+    if (searchDebounce) clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(renderSearch, 80);
+});
+$('searchClear').onclick = () => { $('searchInput').value = ''; renderSearch(); $('searchInput').focus(); };
+$('trayClear').onclick = () => { picked.clear(); renderTray(); renderSearch(); renderAll(); };
+$('traySend').onclick = () => startSend([...picked]);
+
+// ================================================================
+// ===== ADMIN: PHOTO IMPORT                                  =====
+// ================================================================
+function logTo(elId, html, cls) {
+    const el = $(elId);
+    el.hidden = false;
+    el.insertAdjacentHTML('beforeend', `<div class="${cls || ''}">${html}</div>`);
+    el.scrollTop = el.scrollHeight;
+}
+function setProgress(elId, done, total) {
+    const el = $(elId);
+    el.hidden = false;
+    el.firstElementChild.style.width = total ? `${Math.round(done / total * 100)}%` : '0';
+}
+
+$('photoPickBtn').onclick = () => $('photoInput').click();
+$('photoInput').addEventListener('change', async e => {
+    const files = [...e.target.files];
+    e.target.value = '';
+    if (!files.length) return;
+
+    $('photoLog').innerHTML = '';
+    $('photoLog').hidden = false;
+    logTo('photoLog', `<b>${files.length} files selected.</b> Grouping by tutor…`);
+
+    // Two levels of grouping: person, then photo option within that person.
+    // Within one option, Resized beats Full and anything beats HEIC (which no
+    // browser but Safari can decode).
+    const people = new Map();
+    for (const file of files) {
+        const p = parseFilename(file.name);
+        const key = nameKey(p.name);
+        if (!key) { logTo('photoLog', `Skipped <b>${escapeHtml(file.name)}</b> — no name found`, 'warn'); continue; }
+        if (!people.has(key)) people.set(key, new Map());
+        const variants = people.get(key);
+        const vId = variantId(p.tags);
+        if (!variants.has(vId)) variants.set(vId, []);
+        variants.get(vId).push({ ...p, file });
+    }
+
+    const rank = p => (p.size === 'resized' ? 0 : 1) * 10 + (p.ext === 'heic' ? 1 : 0);
+    const chosen = [];
+    for (const [key, variants] of people) {
+        const options = [...variants.entries()]
+            .sort((a, b) => variantRank(a[0]) - variantRank(b[0]))
+            .map(([vId, items]) => {
+                const best = [...items].sort((a, b) => rank(a) - rank(b))[0];
+                return { vId, label: variantLabel(vId), entry: best };
+            });
+
+        const allItems = [...variants.values()].flat();
+        const display = allItems.map(i => i.name).sort((a, b) => b.length - a.length)[0];
+        chosen.push({ key, name: display, options });
+
+        for (const o of options) {
+            if (o.entry.size !== 'resized')
+                logTo('photoLog', `<b>${escapeHtml(display)}</b> (${escapeHtml(o.label)}) — no Resized version, using ${escapeHtml(o.entry.filename)}`, 'warn');
+        }
+        if (options.length > 1)
+            logTo('photoLog', `<b>${escapeHtml(display)}</b> — ${options.length} photo options: ${options.map(o => escapeHtml(o.label)).join(', ')}`);
+    }
+    chosen.sort((a, b) => a.name.localeCompare(b.name));
+
+    const totalPhotos = chosen.reduce((s, c) => s + c.options.length, 0);
+    logTo('photoLog', `<b>${chosen.length} distinct tutors</b>, ${totalPhotos} photos, from ${files.length} files. Uploading…`);
+
+    let done = 0, failed = 0;
+    for (const c of chosen) {
+        try {
+            const stamp = new Date().toISOString();
+            let thumb = null;
+            const photoMeta = [];
+
+            // Each option is handled on its own. One undecodable file (the
+            // HEIC-only "Main" option some tutors have) must not cost them
+            // the options that do work.
+            for (const o of c.options) {
+                try {
+                    const bitmap = await loadBitmap(o.entry.file);
+
+                    // The list avatar comes from the first option that loads —
+                    // one thumb per tutor keeps the whole roster in one read.
+                    if (!thumb) thumb = toDataURL(bitmap, THUMB_MAX, THUMB_Q);
+
+                    const alreadySmall = PASSTHROUGH_TYPES.test(o.entry.ext)
+                        && o.entry.file.size <= PASSTHROUGH_MAX_BYTES
+                        && Math.max(bitmap.width, bitmap.height) <= CARD_MAX;
+                    let card = alreadySmall
+                        ? await fileToDataURL(o.entry.file)
+                        : toDataURL(bitmap, CARD_MAX, CARD_Q);
+
+                    // A Firestore document is capped at 1 MiB. A 1200px JPEG
+                    // lands near 200KB, but a pathological photo could exceed
+                    // it, so drop the quality rather than fail the import.
+                    if (card.length > 900000) {
+                        card = toDataURL(bitmap, 900, 0.7);
+                        logTo('photoLog', `<b>${escapeHtml(c.name)}</b> (${escapeHtml(o.label)}) — photo was oversized, saved smaller`, 'warn');
+                    }
+                    if (bitmap.close) bitmap.close();
+
+                    await setDoc(photoDoc(c.key, o.vId), { card, updatedAt: stamp });
+                    cardCache.set(`${c.key}::${o.vId}`, card);
+
+                    photoMeta.push({
+                        id: o.vId,
+                        label: o.label,
+                        sourceFile: o.entry.filename
+                    });
+                } catch (err) {
+                    console.error(c.name, o.label, err);
+                    const isHeic = o.entry.ext === 'heic';
+                    logTo('photoLog',
+                        `Skipped <b>${escapeHtml(c.name)}</b> (${escapeHtml(o.label)}) — `
+                        + (isHeic
+                            ? `${escapeHtml(o.entry.filename)} is HEIC, which this browser cannot open`
+                            : escapeHtml(err.message || 'could not read the photo')),
+                        'warn');
+                }
+            }
+
+            // Every option failed, so there is no photo to send at all.
+            if (!photoMeta.length) throw new Error('no usable photo');
+
+            const existing = roster.find(t => t.id === c.key);
+            const payload = {
+                name: c.name,
+                key: c.key,
+                thumb,
+                photos: photoMeta,
+                updatedAt: stamp,
+                updatedBy: currentUser?.email || 'unknown'
+            };
+            // Never clobber a real bio that has already been imported.
+            if (!existing) {
+                payload.bio = placeholderBio(c.name);
+                payload.bioPlaceholder = true;
+            }
+
+            await setDoc(tutorDoc(c.key), payload, { merge: true });
+        } catch (err) {
+            failed++;
+            console.error(c.name, err);
+            logTo('photoLog', `Failed <b>${escapeHtml(c.name)}</b> — ${escapeHtml(err.message || 'error')}`, 'bad');
+        }
+        setProgress('photoProgress', ++done, chosen.length);
+    }
+
+    logTo('photoLog', `<b>Done.</b> ${chosen.length - failed} uploaded${failed ? `, ${failed} failed` : ''}.`);
+    showToast(`Imported ${chosen.length - failed} tutors ✓`);
+});
+
+// ================================================================
+// ===== ADMIN: BIO IMPORT                                    =====
+// ================================================================
+// SheetJS is loaded on demand so the 400KB parser never costs anything on
+// the send path, which is what everyone actually uses.
+let xlsxPromise = null;
+function loadXLSX() {
+    if (!xlsxPromise) {
+        xlsxPromise = import('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/xlsx.mjs');
+    }
+    return xlsxPromise;
+}
+
+$('bioPickBtn').onclick = () => $('bioInput').click();
+$('bioInput').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+
+    $('bioLog').innerHTML = '';
+    $('bioLog').hidden = false;
+    logTo('bioLog', `Reading <b>${escapeHtml(file.name)}</b>…`);
+
+    let rows;
+    try {
+        const XLSX = await loadXLSX();
+        const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false });
+    } catch (err) {
+        console.error(err);
+        logTo('bioLog', `Could not read the file — ${escapeHtml(err.message || 'error')}`, 'bad');
+        return;
+    }
+
+    // Drop a header row only if the second cell actually looks like a heading.
+    if (rows.length && /^(bio|sell ?bio|description)$/i.test(String(rows[0][1] || '').trim())) {
+        rows = rows.slice(1);
+    }
+
+    const matched = [], unmatched = [];
+    for (const row of rows) {
+        const name = String(row[0] ?? '').trim();
+        const bio  = String(row[1] ?? '').trim();
+        if (!name && !bio) continue;
+        if (!name) { unmatched.push({ name: '(blank name)', bio, why: 'no name in column A' }); continue; }
+        if (!bio)  { unmatched.push({ name, bio: '', why: 'no bio in column B' }); continue; }
+
+        const key = nameKey(name);
+        let target = roster.find(t => t.id === key) || roster.find(t => nameKey(t.name) === key);
+
+        if (!target) {
+            // One forgiving pass: unique close match only. An ambiguous
+            // near-match is reported, never guessed.
+            const near = roster.filter(t => levenshtein(key, nameKey(t.name)) <= 2);
+            if (near.length === 1) {
+                target = near[0];
+                logTo('bioLog', `Matched <b>${escapeHtml(name)}</b> to <b>${escapeHtml(target.name)}</b>`, 'warn');
+            }
+        }
+        target ? matched.push({ target, bio }) : unmatched.push({ name, bio, why: 'no tutor with that name' });
+    }
+
+    logTo('bioLog', `<b>${matched.length} matched</b>, ${unmatched.length} unmatched.`);
+    for (const u of unmatched) logTo('bioLog', `Unmatched: <b>${escapeHtml(u.name)}</b> — ${u.why}`, 'bad');
+
+    if (!matched.length) { logTo('bioLog', 'Nothing to write.', 'warn'); return; }
+
+    const proceed = await new Promise(res => showDialog(
+        'Write bios?',
+        `${matched.length} bio${matched.length === 1 ? '' : 's'} will be written, overwriting whatever is there now. `
+        + `${unmatched.length} row${unmatched.length === 1 ? '' : 's'} will be skipped.`,
+        true, res));
+    if (!proceed) { logTo('bioLog', 'Cancelled — nothing written.', 'warn'); return; }
+
+    let done = 0, failed = 0;
+    for (const m of matched) {
+        try {
+            await updateDoc(tutorDoc(m.target.id), {
+                bio: m.bio,
+                bioPlaceholder: false,
+                updatedAt: new Date().toISOString(),
+                updatedBy: currentUser?.email || 'unknown'
+            });
+        } catch (err) {
+            failed++;
+            console.error(m.target.name, err);
+            logTo('bioLog', `Failed <b>${escapeHtml(m.target.name)}</b> — ${escapeHtml(err.message || 'error')}`, 'bad');
+        }
+        setProgress('bioProgress', ++done, matched.length);
+    }
+
+    logTo('bioLog', `<b>Done.</b> ${matched.length - failed} written${failed ? `, ${failed} failed` : ''}.`);
+    showToast(`Wrote ${matched.length - failed} bios ✓`);
+});
+
+// ================================================================
+// ===== ADMIN: WHO CAN UPLOAD                                =====
+// ================================================================
+function renderAdminEmails() {
+    $('adminEmails').innerHTML = bioAdmins.length
+        ? bioAdmins.map(e => `<span class="admin-chip">${escapeHtml(e)}
+              <button data-remove="${escapeHtml(e)}" aria-label="Remove ${escapeHtml(e)}">&times;</button>
+           </span>`).join('')
+        : '<small style="color:#6c7480">Only you, so far.</small>';
+}
+
+async function saveAdmins(next) {
+    try {
+        await setDoc(accessDoc(), { bioAdmins: next, updatedAt: new Date().toISOString() }, { merge: true });
+        bioAdmins = next;
+        renderAdminEmails();
+        showToast('Admin list updated ✓');
+    } catch (err) {
+        console.error(err);
+        showDialog('Could not save', 'The security rules rejected that write. Check that your email matches OWNER_EMAIL in both the HTML and firestore.rules.', false);
+    }
+}
+
+$('adminAddBtn').onclick = () => {
+    const input = $('adminEmailInput');
+    const email = input.value.trim().toLowerCase();
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        showDialog('Invalid email', 'Please enter a full email address.', false);
+        return;
+    }
+    if (bioAdmins.includes(email)) { showToast('Already on the list'); return; }
+    input.value = '';
+    saveAdmins([...bioAdmins, email]);
+};
+
+$('adminEmails').addEventListener('click', e => {
+    const btn = e.target.closest('[data-remove]');
+    if (!btn) return;
+    const email = btn.dataset.remove;
+    showDialog('Remove access?', `${email} will no longer be able to upload photos or bios.`, true,
+        ok => ok && saveAdmins(bioAdmins.filter(x => x !== email)));
+});
+
+// ================================================================
+// ===== BOOT                                                 =====
+// ================================================================
+renderFromCache();
+renderSearch();
+renderTray();
+nextFrame(() => $('searchInput').focus());
+</script>
+</body>
+</html>

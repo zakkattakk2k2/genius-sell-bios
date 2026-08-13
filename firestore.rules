@@ -1,0 +1,81 @@
+// ============================================================================
+//  Genius Sell Bios — Firestore security rules
+//
+//  Paste this WHOLE file into:
+//    Firebase console > Firestore Database > Rules > (select all, replace) > Publish
+//
+//  This is for the sell-bios project ONLY. It is a separate Firebase project
+//  from the schedule maker, so publishing this cannot affect schedule data.
+//
+//  IF YOU CHANGE THE OWNER EMAIL: change it in BOTH places — the OWNER_EMAIL
+//  line in index.html AND the isOwner() function below — then re-publish.
+// ============================================================================
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------
+    //  Who is who
+    // ------------------------------------------------------------------
+
+    // A signed-in Genius Premium account. Staff can read every bio and photo.
+    // Anyone outside the domain is refused, including signed-in Google users.
+    function isStaff() {
+      return request.auth != null
+          && request.auth.token.email != null
+          && request.auth.token.email_verified == true
+          && request.auth.token.email.matches('.*@geniuspremium[.]com');
+    }
+
+    function isOwner() {
+      return isStaff() && request.auth.token.email == 'zak.k@geniuspremium.com';
+    }
+
+    // Upload rights come from ONE list, stored at config/access and edited from
+    // the app's Admin tab, so the button and the permission can never disagree.
+    // Costs one extra document read per write, which is nothing at this volume.
+    function isBioAdmin() {
+      return isStaff() && (
+        isOwner()
+        || request.auth.token.email in
+             get(/databases/$(database)/documents/artifacts/genius-sellbios/public/data/config/access)
+               .data.bioAdmins
+      );
+    }
+
+    // ------------------------------------------------------------------
+    //  Data
+    // ------------------------------------------------------------------
+
+    // Tutor record: name, bio, list thumbnail, and the photo-option metadata.
+    match /artifacts/genius-sellbios/public/data/tutors/{tutorId} {
+      allow read:   if isStaff();
+      allow write:  if isBioAdmin();
+      allow delete: if isBioAdmin();
+    }
+
+    // One document per photo OPTION, id "{tutorKey}::{variantId}" — 35 tutors
+    // have both an EL and a GI photo, and several ~200KB images will not fit
+    // in a single 1MiB document. Kept out of the tutor doc so the list view
+    // does not download 255 full-size photos.
+    match /artifacts/genius-sellbios/public/data/tutorPhotos/{photoId} {
+      allow read:   if isStaff();
+      allow write:  if isBioAdmin();
+      allow delete: if isBioAdmin();
+    }
+
+    // The upload-rights list. Staff can read it (the app hides the Admin tab
+    // based on it); only the owner can change it.
+    match /artifacts/genius-sellbios/public/data/config/access {
+      allow read:  if isStaff();
+      allow write: if isOwner();
+    }
+
+    // ------------------------------------------------------------------
+    //  Everything else is denied
+    // ------------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
