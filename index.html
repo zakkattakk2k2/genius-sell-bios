@@ -1181,6 +1181,27 @@ const SUGGEST_MIN  = 0.35;
 const SUGGEST_MAX  = 6;
 const CONFIDENT    = 0.78;   // pre-selected in the review list
 
+// Which candidate, if any, is safe to tick on the admin's behalf. A high
+// score is not enough on its own: the real roster contains Shannon, Shannon
+// Cumming and Shannon Hassen, so "Shannon Ndlovu" scores 82% against the
+// bare "Shannon" while being nobody's idea of a certainty.
+function defaultChoice(name, candidates) {
+    const top = candidates[0];
+    if (!top || top.score < CONFIDENT) return '__skip__';
+
+    // Someone else is nearly as good a fit.
+    const second = candidates[1];
+    if (second && top.score - second.score < 0.15) return '__skip__';
+
+    // The match rests on a first name that several tutors share.
+    const first = tokensOf(nameKey(name))[0];
+    if (first && tokensOf(top.t.id).length === 1) {
+        const sharing = roster.filter(t => tokensOf(nameKey(t.name))[0] === first);
+        if (sharing.length > 1) return '__skip__';
+    }
+    return top.t.id;
+}
+
 function candidatesFor(name) {
     const key = nameKey(name);
     if (!key) return [];
@@ -2029,10 +2050,12 @@ $('bioInput').addEventListener('change', async e => {
         // code guessed on edit distance and gave up, which is how 35 bios
         // went missing.
         const candidates = candidatesFor(name);
-        const top = candidates[0];
+        const choice = defaultChoice(name, candidates);
         bioReviewRows.push({
-            name, bio, candidates,
-            choice: top && top.score >= CONFIDENT ? top.t.id : '__skip__'
+            name, bio, candidates, choice,
+            // A good score that still needs a human — worth saying so.
+            ambiguous: choice === '__skip__'
+                       && !!candidates[0] && candidates[0].score >= CONFIDENT
         });
     }
 
@@ -2067,8 +2090,12 @@ function renderReview() {
                 + `</option>`).join('');
 
             const best = r.candidates[0];
-            const cls  = !best ? 'conf-none' : best.score >= CONFIDENT ? 'conf-strong' : 'conf-weak';
-            const tag  = !best ? 'no close names' : `closest ${Math.round(best.score * 100)}%`;
+            const cls  = !best ? 'conf-none'
+                       : r.ambiguous ? 'conf-weak'
+                       : best.score >= CONFIDENT ? 'conf-strong' : 'conf-weak';
+            const tag  = !best ? 'no close names'
+                       : r.ambiguous ? 'more than one could fit'
+                       : `closest ${Math.round(best.score * 100)}%`;
 
             return `<div class="review-row${r.choice === '__skip__' ? ' is-skipped' : ''}" data-i="${i}">
                 <div class="review-name">${escapeHtml(r.name)}<span class="conf ${cls}">${tag}</span></div>
