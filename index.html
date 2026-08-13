@@ -249,7 +249,21 @@
             color: var(--accent-gold);
         }
 
-        .tutor-actions { display: flex; gap: 6px; flex: 0 0 auto; }
+        /* Admins get a third button here, so this has to survive a 360px phone.
+           nowrap keeps the row one line high; the name column shrinks instead. */
+        .tutor-actions {
+            display: flex;
+            gap: 6px;
+            flex: 0 0 auto;
+            flex-wrap: nowrap;
+            justify-content: flex-end;
+        }
+        @media (max-width: 480px) {
+            .tutor-row { gap: 9px; }
+            .tutor-actions { gap: 4px; }
+            .tutor-actions .btn-sm { padding: 8px 8px; font-size: .68rem; }
+            .avatar { width: 42px; height: 42px; flex-basis: 42px; }
+        }
 
         /* ===== Buttons ===== */
         button {
@@ -402,6 +416,156 @@
             outline: none;
         }
 
+        /* ===== Bio import review ===== */
+        .review {
+            margin-top: 14px;
+            border: 1px solid rgba(212, 175, 55, .35);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .review[hidden] { display: none; }
+        .review-head {
+            padding: 12px 14px;
+            background: rgba(212, 175, 55, .1);
+            border-bottom: 1px solid rgba(212, 175, 55, .25);
+        }
+        .review-head b { font-size: .82rem; }
+        .review-head p { margin: 4px 0 0 !important; font-size: .74rem !important; }
+        .review-opts { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 10px; }
+        .review-opts label {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: .74rem;
+            color: #cdd4dd;
+            cursor: pointer;
+        }
+        .review-opts input { accent-color: var(--accent-gold); width: 15px; height: 15px; }
+
+        .review-list { max-height: 46vh; overflow-y: auto; }
+        .review-row {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, .07);
+            display: grid;
+            gap: 8px;
+        }
+        .review-row:last-child { border-bottom: 0; }
+        .review-row.is-skipped { opacity: .5; }
+        .review-name { font-size: .84rem; font-weight: 700; }
+        .review-name .conf {
+            margin-left: 8px;
+            font-size: .66rem;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            padding: 2px 7px;
+            border-radius: 999px;
+        }
+        .conf-strong { color: #7ee2a8; background: rgba(46, 204, 113, .14); }
+        .conf-weak   { color: #ffcf7a; background: rgba(255, 207, 122, .14); }
+        .conf-none   { color: #ff9c91; background: rgba(231, 76, 60, .14); }
+        .review-bio {
+            font-size: .72rem;
+            color: #8b95a3;
+            line-height: 1.5;
+            max-height: 3em;
+            overflow: hidden;
+        }
+        .review-row select {
+            width: 100%;
+            padding: 9px 11px;
+            font-size: .8rem;
+            font-family: inherit;
+            color: #f5f6f8;
+            background: rgba(0, 0, 0, .45);
+            border: 1px solid rgba(255, 255, 255, .16);
+            border-radius: 9px;
+            outline: none;
+        }
+        .review-row select:focus { border-color: var(--accent-gold); }
+        .review-row select option { background: #1a2028; color: #f5f6f8; }
+        .review-actions {
+            display: flex;
+            gap: 8px;
+            padding: 12px 14px;
+            border-top: 1px solid rgba(255, 255, 255, .1);
+            background: rgba(0, 0, 0, .25);
+        }
+        .review-actions button { flex: 1; }
+
+        /* ===== Edit tutor form ===== */
+        .field { text-align: left; margin-top: 12px; }
+        .field label {
+            display: block;
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            color: #8b95a3;
+            margin-bottom: 5px;
+        }
+        .field input[type="text"], .field textarea {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: .85rem;
+            font-family: inherit;
+            line-height: 1.5;
+            color: #f5f6f8;
+            background: rgba(0, 0, 0, .38);
+            border: 1px solid rgba(255, 255, 255, .14);
+            border-radius: 10px;
+            outline: none;
+            resize: vertical;
+        }
+        .field input:focus, .field textarea:focus { border-color: var(--accent-gold); }
+        .hint { font-size: .7rem; color: #6c7480; margin: 5px 0 0; line-height: 1.45; }
+
+        .photo-rows { display: grid; gap: 8px; }
+        .photo-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 10px;
+        }
+        .photo-row img, .photo-row .pr-chip {
+            width: 38px;
+            height: 38px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #0d1117;
+            border: 1px solid rgba(255, 255, 255, .1);
+            flex: none;
+        }
+        .photo-row .pr-chip {
+            display: grid;
+            place-items: center;
+            font-size: .6rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+            color: #6c7480;
+        }
+        .photo-row .pr-label { flex: 1; font-size: .78rem; font-weight: 600; text-align: left; }
+        .photo-row .pr-state { font-size: .68rem; color: #7ee2a8; }
+        .edit-danger {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255, 255, 255, .1);
+        }
+        .btn-danger {
+            padding: 10px 14px;
+            font-size: .76rem;
+            font-weight: 700;
+            color: #ff9c91;
+            background: rgba(231, 76, 60, .12);
+            border: 1px solid rgba(231, 76, 60, .4);
+        }
+        .btn-danger:hover:not(:disabled) { background: rgba(231, 76, 60, .2); }
+        .modal.modal-wide { max-width: 500px; text-align: left; }
+        .modal.modal-wide h3 { text-align: left; }
+
         /* ===== Modals ===== */
         .modal-overlay {
             display: none;
@@ -517,8 +681,19 @@
 
         @media (max-width: 560px) {
             .tabs button { font-size: .68rem; padding: 11px 6px; }
-            .tutor-actions { flex-direction: column; }
             .panel { padding: 14px; }
+
+            /* Two columns with Send across the bottom. An admin's extra Edit
+               button then costs no height at all: two rows either way. */
+            .tutor-actions {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 5px;
+                flex: 0 0 108px;
+                width: 108px;
+            }
+            .tutor-actions .btn-sm { padding: 8px 4px; font-size: .68rem; }
+            .tutor-actions [data-act="send"] { grid-column: 1 / -1; }
 
             /* Send is the whole point of the sheet, so it has to be reachable
                without scrolling on a portrait phone. Give the photo and the
@@ -590,16 +765,45 @@
         <div class="admin-block">
             <h3>2 · Import sell bios from Excel</h3>
             <p>First column = tutor name, second column = bio. A header row is detected and
-               skipped. Names are matched to existing tutors; anything unmatched is listed
-               rather than silently dropped, and nothing is written until you confirm.</p>
+               skipped. Rows whose name matches a tutor exactly are written straight through.
+               Everything else lands in a review list with the closest names offered, so a
+               bio filed under <b>Thato Mashiyane</b> can still be attached to a photo saved
+               as <b>Thato</b>. Nothing is written until you confirm.</p>
             <button class="btn-primary" id="bioPickBtn">Choose spreadsheet…</button>
             <input type="file" id="bioInput" accept=".xlsx,.xlsm,.xls,.csv">
+
+            <div class="review" id="bioReview" hidden>
+                <div class="review-head">
+                    <b id="reviewTitle">Review matches</b>
+                    <p id="reviewSummary"></p>
+                    <div class="review-opts">
+                        <label>
+                            <input type="checkbox" id="reviewRename" checked>
+                            Use the spreadsheet's fuller name (Thato → Thato Mashiyane)
+                        </label>
+                    </div>
+                </div>
+                <div class="review-list" id="reviewList"></div>
+                <div class="review-actions">
+                    <button class="btn-ghost" id="reviewCancel">Cancel</button>
+                    <button class="btn-primary" id="reviewWrite">Write bios</button>
+                </div>
+            </div>
+
             <div class="progress" id="bioProgress" hidden><span></span></div>
             <div class="import-log" id="bioLog" hidden></div>
         </div>
 
+        <div class="admin-block">
+            <h3>3 · Add a tutor by hand</h3>
+            <p>For someone with no photo file — or whose photo never imported. You can add
+               the photo now or later. To change an existing tutor instead, use the
+               <b>Edit</b> button on their row in Send or View All.</p>
+            <button class="btn-primary" id="newTutorBtn">Add a tutor…</button>
+        </div>
+
         <div class="admin-block" id="adminsBlock" hidden>
-            <h3>3 · Who can upload</h3>
+            <h3>4 · Who can upload</h3>
             <p>This is the same list the Firestore security rules read, so the button and the
                permission can never disagree. Only you can edit it.</p>
             <div class="admin-emails" id="adminEmails"></div>
@@ -610,7 +814,7 @@
         </div>
     </section>
 
-    <footer class="app-credits">developed by zak.k &middot; envisioned by james.r</footer>
+    <footer class="app-credits">developed by zak.k</footer>
 
     <!-- ===================== MODALS ===================== -->
     <div class="modal-overlay" id="sendSheet">
@@ -632,10 +836,55 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="editModal">
+        <div class="modal modal-wide">
+            <h3 id="editTitle">Edit tutor</h3>
+
+            <div class="field">
+                <label for="editName">Name</label>
+                <input type="text" id="editName" autocomplete="off" spellcheck="false">
+                <p class="hint" id="editNameHint"></p>
+            </div>
+
+            <div class="field">
+                <label for="editBio">Sell bio</label>
+                <textarea id="editBio" rows="7" spellcheck="true"></textarea>
+                <p class="hint" id="editBioHint"></p>
+            </div>
+
+            <div class="field">
+                <label>Photos</label>
+                <div class="photo-rows" id="editPhotos"></div>
+                <div class="admin-row" style="margin-top:8px">
+                    <input type="text" id="editNewLabel" placeholder="New photo label — GI, EL, Main…" autocomplete="off">
+                    <button class="btn-ghost btn-sm" id="editAddPhoto">Add photo</button>
+                </div>
+                <p class="hint">Photos are shrunk in your browser before upload. Replacing one
+                   keeps the label, so anything already sent stays consistent.</p>
+            </div>
+
+            <input type="file" id="editPhotoInput" accept="image/*" hidden>
+
+            <div class="modal-actions">
+                <button class="btn-ghost" id="editCancel">Cancel</button>
+                <button class="btn-primary" id="editSave">Save changes</button>
+            </div>
+
+            <div class="edit-danger" id="editDangerZone">
+                <button class="btn-danger" id="editDelete">Delete this tutor</button>
+                <p class="hint">Removes the tutor and every photo stored for them. Cannot be undone.</p>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="dialogModal">
         <div class="modal">
             <h3 id="dialogTitle">Title</h3>
             <p class="msg" id="dialogMessage">Message</p>
+            <div class="field" id="dialogInputWrap" hidden>
+                <label for="dialogInput" id="dialogInputLabel">Type to confirm</label>
+                <input type="text" id="dialogInput" autocomplete="off" spellcheck="false">
+            </div>
             <div class="modal-actions">
                 <button class="btn-ghost" id="dialogCancel">Cancel</button>
                 <button class="btn-primary" id="dialogConfirm">OK</button>
@@ -649,7 +898,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut }
     from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, onSnapshot }
+import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, onSnapshot }
     from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // Config comes from the SETTINGS block at the top of this file. This app has
@@ -740,13 +989,45 @@ function showDialog(title, message, isConfirm, cb) {
     $('dialogTitle').textContent = title;
     $('dialogMessage').textContent = message;
     $('dialogCancel').style.display = isConfirm ? '' : 'none';
+    $('dialogInputWrap').hidden = true;
 
     const fresh = btn => { const c = btn.cloneNode(true); btn.replaceWith(c); return c; };
     const ok = fresh($('dialogConfirm'));
     const no = fresh($('dialogCancel'));
+    ok.disabled = false;
     ok.onclick = () => { closeOverlay($('dialogModal')); cb && cb(true); };
     no.onclick = () => { closeOverlay($('dialogModal')); cb && cb(false); };
     openOverlay($('dialogModal'));
+}
+
+// Same modal, but the confirm button stays dead until the exact phrase is
+// typed. Reserved for things that cannot be undone.
+function showTypedConfirm(title, message, phrase, cb) {
+    $('dialogTitle').textContent = title;
+    $('dialogMessage').textContent = message;
+    $('dialogCancel').style.display = '';
+    $('dialogInputWrap').hidden = false;
+    $('dialogInputLabel').textContent = `Type “${phrase}” to confirm`;
+
+    const fresh = el => { const c = el.cloneNode(true); el.replaceWith(c); return c; };
+    const ok = fresh($('dialogConfirm'));
+    const no = fresh($('dialogCancel'));
+    const input = fresh($('dialogInput'));
+
+    input.value = '';
+    ok.disabled = true;
+    const check = () => { ok.disabled = fold(input.value).trim() !== fold(phrase).trim(); };
+    input.addEventListener('input', check);
+
+    const finish = result => {
+        closeOverlay($('dialogModal'));
+        $('dialogInputWrap').hidden = true;
+        cb && cb(result);
+    };
+    ok.onclick = () => !ok.disabled && finish(true);
+    no.onclick = () => finish(false);
+    openOverlay($('dialogModal'));
+    nextFrame(() => input.focus());
 }
 
 const escapeHtml = s => String(s).replace(/[&<>"']/g,
@@ -821,6 +1102,94 @@ const variantRank = id => {
     const i = VARIANT_ORDER.indexOf(id.split('+')[0]);
     return i < 0 ? VARIANT_ORDER.length : i;
 };
+
+// ================================================================
+// ===== NAME MATCHING (bio import)                           =====
+// ================================================================
+// Photos are filed under whatever the photographer typed — often a first
+// name alone ("Thato") — while the bio spreadsheet carries the full name
+// ("Thato Mashiyane"). Edit distance is useless there: those two strings
+// are 10 edits apart. What actually matters is whether the words line up,
+// so scoring works token by token rather than character by character.
+
+const tokensOf = key => key.split(' ').filter(Boolean);
+
+// How alike are two single words, 0–1.
+function tokenSim(a, b) {
+    if (a === b) return 1;
+    // "T Mashiyane" against "Thato Mashiyane" — an initial standing in.
+    if ((a.length === 1 || b.length === 1) && a[0] === b[0]) return 0.8;
+    // A short word has no room for a typo without becoming a different word.
+    const longest = Math.max(a.length, b.length);
+    if (longest <= 3) return 0;
+    const d = levenshtein(a, b);
+    if (d === 1) return 0.85;                        // Nel / Nell
+    if (d === 2 && longest >= 7) return 0.6;         // Chrystyler / Chrystiler
+    return 0;
+}
+
+// 0 = unrelated, 1 = identical. Only ever used to rank suggestions; the
+// admin makes the final call, so a generous score is safer than a strict
+// one that hides the right answer.
+function matchScore(aKey, bKey) {
+    if (!aKey || !bKey) return 0;
+    if (aKey === bKey) return 1;
+
+    const A = tokensOf(aKey), B = tokensOf(bKey);
+    if (!A.length || !B.length) return 0;
+
+    // Greedily pair each word on the left with its best unused partner.
+    const taken = new Array(B.length).fill(false);
+    let sum = 0, pairs = 0;
+    for (const wa of A) {
+        let best = 0, bestIdx = -1;
+        for (let i = 0; i < B.length; i++) {
+            if (taken[i]) continue;
+            const s = tokenSim(wa, B[i]);
+            if (s > best) { best = s; bestIdx = i; }
+        }
+        if (bestIdx >= 0) { taken[bestIdx] = true; sum += best; pairs++; }
+    }
+    if (!pairs) return 0;
+
+    const shorter = Math.min(A.length, B.length);
+    const longer  = Math.max(A.length, B.length);
+
+    // Coverage of the SHORTER name. "Thato" inside "Thato Mashiyane" scores
+    // a full 1 here, which is the whole point of this function.
+    let score = sum / shorter;
+
+    // Words left over on the longer side still cost something: one extra
+    // surname is a good bet, three extra words is a different person.
+    score -= (longer - pairs) * 0.13;
+
+    // A lone shared first name is genuinely weak evidence — it is exactly
+    // how one Thato gets confused with another. Cap it below the threshold
+    // at which the UI calls a match "strong".
+    if (pairs === 1 && shorter === 1 && A[0] !== B[0]) score = Math.min(score, 0.6);
+    else if (pairs === 1 && shorter === 1)             score = Math.min(score, 0.82);
+
+    return Math.max(0, Math.min(0.99, score));
+}
+
+// Best candidates for a spreadsheet name, strongest first.
+// Deliberately loose. A near-miss that turns out to be the wrong person
+// costs one glance; a right answer hidden below the threshold costs a bio.
+// It also keeps rival candidates visible — with two Thatos on the roster,
+// seeing both is the whole point.
+const SUGGEST_MIN  = 0.35;
+const SUGGEST_MAX  = 6;
+const CONFIDENT    = 0.78;   // pre-selected in the review list
+
+function candidatesFor(name) {
+    const key = nameKey(name);
+    if (!key) return [];
+    return roster
+        .map(t => ({ t, score: Math.max(matchScore(key, t.id), matchScore(key, nameKey(t.name))) }))
+        .filter(x => x.score >= SUGGEST_MIN)
+        .sort((a, b) => b.score - a.score || a.t.name.localeCompare(b.t.name))
+        .slice(0, SUGGEST_MAX);
+}
 
 // ================================================================
 // ===== SEARCH                                               =====
@@ -1070,6 +1439,10 @@ function applyAdminVisibility() {
     $('adminsBlock').hidden = !isOwner;
     if (!isBioAdmin && $('tab-admin').getAttribute('aria-selected') === 'true') selectTab('send');
     if (isOwner) renderAdminEmails();
+    // The per-row Edit button only exists for admins, so the lists have to be
+    // redrawn once we know which we are.
+    renderAll();
+    renderSearch();
 }
 
 // ================================================================
@@ -1124,8 +1497,10 @@ async function getCard(tutorId, vId) {
     return card;
 }
 
-// Tutors imported before photo options existed have no photos array.
-const photoOptions = t => (Array.isArray(t.photos) && t.photos.length)
+// Tutors imported before photo options existed have no photos array at all.
+// An array that is present but EMPTY is different: it means someone was added
+// by hand and genuinely has no photo yet, so do not invent a "Main" one.
+const photoOptions = t => Array.isArray(t.photos)
     ? t.photos
     : [{ id: 'main', label: 'Main' }];
 
@@ -1161,6 +1536,7 @@ function rowHtml(t, query, picked) {
             <div class="tutor-bio${t.bioPlaceholder ? ' is-placeholder' : ''}">${escapeHtml(snippet(t.bio))}</div>
         </div>
         <div class="tutor-actions">
+            ${isBioAdmin ? '<button class="btn-ghost btn-sm" data-act="edit">Edit</button>' : ''}
             <button class="btn-ghost btn-sm" data-act="pick">${picked ? 'Remove' : 'Add'}</button>
             <button class="btn-primary btn-sm" data-act="send">Send</button>
         </div>
@@ -1272,6 +1648,15 @@ async function showSendStep() {
 
     const options = photoOptions(t);
     renderPhotoOptions(t, options);
+
+    // Someone added by hand may have a bio and no photo at all.
+    if (!options.length) {
+        $('sendImg').removeAttribute('src');
+        $('sendShare').disabled = true;
+        $('sendHint').textContent = 'No photo for this tutor yet — the caption can still be copied.';
+        wireSendButtons(t, null);
+        return;
+    }
     await loadPhoto(t, options[0].id);
 }
 
@@ -1396,6 +1781,7 @@ function wireList(container) {
         if (!id) return;
 
         if (btn.dataset.act === 'send') { startSend([id]); return; }
+        if (btn.dataset.act === 'edit') { openEditor(id); return; }
 
         picked.has(id) ? picked.delete(id) : picked.add(id);
         renderTray();
@@ -1580,13 +1966,29 @@ function loadXLSX() {
 }
 
 $('bioPickBtn').onclick = () => $('bioInput').click();
+
+// Rows that matched a tutor by name, exactly. These are written as-is.
+let bioExact = [];
+// Everything else, held for review: { name, bio, candidates, choice }.
+// choice is a tutor id, '__new__', or '__skip__'.
+let bioReviewRows = [];
+
+function resetBioReview() {
+    bioExact = [];
+    bioReviewRows = [];
+    $('bioReview').hidden = true;
+    $('reviewList').innerHTML = '';
+}
+
 $('bioInput').addEventListener('change', async e => {
     const file = e.target.files[0];
     e.target.value = '';
     if (!file) return;
 
+    resetBioReview();
     $('bioLog').innerHTML = '';
     $('bioLog').hidden = false;
+    $('bioProgress').hidden = true;
     logTo('bioLog', `Reading <b>${escapeHtml(file.name)}</b>…`);
 
     let rows;
@@ -1606,61 +2008,486 @@ $('bioInput').addEventListener('change', async e => {
         rows = rows.slice(1);
     }
 
-    const matched = [], unmatched = [];
+    let incomplete = 0;
     for (const row of rows) {
         const name = String(row[0] ?? '').trim();
         const bio  = String(row[1] ?? '').trim();
         if (!name && !bio) continue;
-        if (!name) { unmatched.push({ name: '(blank name)', bio, why: 'no name in column A' }); continue; }
-        if (!bio)  { unmatched.push({ name, bio: '', why: 'no bio in column B' }); continue; }
+        if (!name || !bio) {
+            incomplete++;
+            logTo('bioLog', name
+                ? `Skipped <b>${escapeHtml(name)}</b> — no bio in column B`
+                : 'Skipped a row — no name in column A', 'warn');
+            continue;
+        }
 
         const key = nameKey(name);
-        let target = roster.find(t => t.id === key) || roster.find(t => nameKey(t.name) === key);
+        const exact = roster.find(t => t.id === key) || roster.find(t => nameKey(t.name) === key);
+        if (exact) { bioExact.push({ target: exact, bio }); continue; }
 
-        if (!target) {
-            // One forgiving pass: unique close match only. An ambiguous
-            // near-match is reported, never guessed.
-            const near = roster.filter(t => levenshtein(key, nameKey(t.name)) <= 2);
-            if (near.length === 1) {
-                target = near[0];
-                logTo('bioLog', `Matched <b>${escapeHtml(name)}</b> to <b>${escapeHtml(target.name)}</b>`, 'warn');
-            }
-        }
-        target ? matched.push({ target, bio }) : unmatched.push({ name, bio, why: 'no tutor with that name' });
+        // No exact hit. Rank the roster and let the admin decide — the old
+        // code guessed on edit distance and gave up, which is how 35 bios
+        // went missing.
+        const candidates = candidatesFor(name);
+        const top = candidates[0];
+        bioReviewRows.push({
+            name, bio, candidates,
+            choice: top && top.score >= CONFIDENT ? top.t.id : '__skip__'
+        });
     }
 
-    logTo('bioLog', `<b>${matched.length} matched</b>, ${unmatched.length} unmatched.`);
-    for (const u of unmatched) logTo('bioLog', `Unmatched: <b>${escapeHtml(u.name)}</b> — ${u.why}`, 'bad');
+    logTo('bioLog',
+        `<b>${bioExact.length} exact match${bioExact.length === 1 ? '' : 'es'}</b>, `
+        + `${bioReviewRows.length} to review`
+        + `${incomplete ? `, ${incomplete} incomplete row${incomplete === 1 ? '' : 's'} skipped` : ''}.`);
 
-    if (!matched.length) { logTo('bioLog', 'Nothing to write.', 'warn'); return; }
+    if (!bioExact.length && !bioReviewRows.length) {
+        logTo('bioLog', 'Nothing usable in that file.', 'warn');
+        return;
+    }
+    renderReview();
+});
 
-    const proceed = await new Promise(res => showDialog(
-        'Write bios?',
-        `${matched.length} bio${matched.length === 1 ? '' : 's'} will be written, overwriting whatever is there now. `
-        + `${unmatched.length} row${unmatched.length === 1 ? '' : 's'} will be skipped.`,
-        true, res));
+function renderReview() {
+    const preset = bioReviewRows.filter(r => r.choice !== '__skip__').length;
+
+    $('reviewSummary').textContent = bioReviewRows.length
+        ? `${bioExact.length} row${bioExact.length === 1 ? '' : 's'} matched exactly and will be written as they are. `
+          + `${bioReviewRows.length} need${bioReviewRows.length === 1 ? 's' : ''} a decision`
+          + `${preset ? ` — ${preset} already ${preset === 1 ? 'has a confident suggestion' : 'have confident suggestions'} selected` : ''}.`
+        : `All ${bioExact.length} row${bioExact.length === 1 ? '' : 's'} matched a tutor exactly. Nothing to review.`;
+
+    $('reviewList').innerHTML = bioReviewRows.length
+        ? bioReviewRows.map((r, i) => {
+            const opts = r.candidates.map(c =>
+                `<option value="${escapeHtml(c.t.id)}"${r.choice === c.t.id ? ' selected' : ''}>`
+                + `${escapeHtml(c.t.name)} — ${Math.round(c.score * 100)}%`
+                + `${photoOptions(c.t).length > 1 ? ` · ${photoOptions(c.t).length} photos` : ''}`
+                + `${c.t.bioPlaceholder ? ' · placeholder bio' : ' · has a real bio'}`
+                + `</option>`).join('');
+
+            const best = r.candidates[0];
+            const cls  = !best ? 'conf-none' : best.score >= CONFIDENT ? 'conf-strong' : 'conf-weak';
+            const tag  = !best ? 'no close names' : `closest ${Math.round(best.score * 100)}%`;
+
+            return `<div class="review-row${r.choice === '__skip__' ? ' is-skipped' : ''}" data-i="${i}">
+                <div class="review-name">${escapeHtml(r.name)}<span class="conf ${cls}">${tag}</span></div>
+                <div class="review-bio">${escapeHtml(snippet(r.bio))}</div>
+                <select data-i="${i}" aria-label="Attach the bio for ${escapeHtml(r.name)} to">
+                    ${opts}
+                    <option value="__new__"${r.choice === '__new__' ? ' selected' : ''}>+ Add “${escapeHtml(r.name)}” as a new tutor</option>
+                    <option value="__skip__"${r.choice === '__skip__' ? ' selected' : ''}>Skip this row</option>
+                </select>
+            </div>`;
+        }).join('')
+        : '<div class="empty">Every row matched a tutor exactly.</div>';
+
+    updateWriteButton();
+    $('bioReview').hidden = false;
+    $('bioReview').scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'nearest' });
+}
+
+function updateWriteButton() {
+    const chosen = bioReviewRows.filter(r => r.choice !== '__skip__').length;
+    const total = bioExact.length + chosen;
+    const btn = $('reviewWrite');
+    btn.textContent = total ? `Write ${total} bio${total === 1 ? '' : 's'}` : 'Nothing selected';
+    btn.disabled = !total;
+}
+
+$('reviewList').addEventListener('change', e => {
+    const sel = e.target.closest('select[data-i]');
+    if (!sel) return;
+    const row = bioReviewRows[Number(sel.dataset.i)];
+    if (!row) return;
+    row.choice = sel.value;
+    sel.closest('.review-row').classList.toggle('is-skipped', sel.value === '__skip__');
+    updateWriteButton();
+});
+
+$('reviewCancel').onclick = () => {
+    resetBioReview();
+    logTo('bioLog', 'Cancelled — nothing written.', 'warn');
+};
+
+$('reviewWrite').onclick = async () => {
+    const renameOn = $('reviewRename').checked;
+    const plan = [];
+
+    for (const x of bioExact) {
+        plan.push({ kind: 'update', id: x.target.id, label: x.target.name, bio: x.bio });
+    }
+
+    for (const r of bioReviewRows) {
+        if (r.choice === '__skip__') continue;
+
+        if (r.choice === '__new__') {
+            const id = nameKey(r.name);
+            if (!id) { logTo('bioLog', `Cannot create <b>${escapeHtml(r.name)}</b> — no usable name`, 'bad'); continue; }
+            plan.push({ kind: 'create', id, label: r.name.trim(), bio: r.bio });
+            continue;
+        }
+
+        const t = roster.find(x => x.id === r.choice);
+        if (!t) continue;
+
+        // The spreadsheet usually holds the fuller, properly spelled name;
+        // the photo filename holds whatever was typed that day.
+        const fuller = renameOn
+            && tokensOf(nameKey(r.name)).length > tokensOf(nameKey(t.name)).length;
+
+        plan.push({
+            kind: 'update', id: t.id, label: t.name, bio: r.bio,
+            newName: fuller ? r.name.trim() : null
+        });
+    }
+
+    // Two rows aimed at one tutor means one silently overwrites the other.
+    const counts = new Map();
+    for (const p of plan) counts.set(p.id, (counts.get(p.id) || 0) + 1);
+    const clashes = [...counts.entries()].filter(([, n]) => n > 1)
+        .map(([id]) => roster.find(t => t.id === id)?.name || id);
+
+    const renames = plan.filter(p => p.newName).length;
+    const creates = plan.filter(p => p.kind === 'create').length;
+
+    const detail = [
+        `${plan.length} bio${plan.length === 1 ? '' : 's'} will be written, overwriting whatever is there now.`,
+        creates ? `${creates} new tutor${creates === 1 ? '' : 's'} will be created without a photo.` : '',
+        renames ? `${renames} tutor${renames === 1 ? '' : 's'} will be renamed to the spreadsheet spelling.` : '',
+        clashes.length ? `Warning: ${clashes.join(', ')} ${clashes.length === 1 ? 'is' : 'are'} targeted by more than one row — only the last will survive.` : ''
+    ].filter(Boolean).join(' ');
+
+    const proceed = await new Promise(res => showDialog('Write bios?', detail, true, res));
     if (!proceed) { logTo('bioLog', 'Cancelled — nothing written.', 'warn'); return; }
 
+    $('bioReview').hidden = true;
     let done = 0, failed = 0;
-    for (const m of matched) {
+    const stamp = () => new Date().toISOString();
+    const who = () => currentUser?.email || 'unknown';
+
+    for (const p of plan) {
         try {
-            await updateDoc(tutorDoc(m.target.id), {
-                bio: m.bio,
-                bioPlaceholder: false,
-                updatedAt: new Date().toISOString(),
-                updatedBy: currentUser?.email || 'unknown'
-            });
+            if (p.kind === 'create') {
+                await setDoc(tutorDoc(p.id), {
+                    name: p.label,
+                    key: p.id,
+                    bio: p.bio,
+                    bioPlaceholder: false,
+                    photos: [],
+                    thumb: null,
+                    updatedAt: stamp(),
+                    updatedBy: who()
+                }, { merge: true });
+                logTo('bioLog', `Created <b>${escapeHtml(p.label)}</b> — no photo yet`, 'warn');
+            } else {
+                const patch = {
+                    bio: p.bio,
+                    bioPlaceholder: false,
+                    updatedAt: stamp(),
+                    updatedBy: who()
+                };
+                if (p.newName) patch.name = p.newName;
+                await updateDoc(tutorDoc(p.id), patch);
+                if (p.newName) logTo('bioLog', `Renamed <b>${escapeHtml(p.label)}</b> → <b>${escapeHtml(p.newName)}</b>`);
+            }
         } catch (err) {
             failed++;
-            console.error(m.target.name, err);
-            logTo('bioLog', `Failed <b>${escapeHtml(m.target.name)}</b> — ${escapeHtml(err.message || 'error')}`, 'bad');
+            console.error(p.label, err);
+            logTo('bioLog', `Failed <b>${escapeHtml(p.label)}</b> — ${escapeHtml(err.message || 'error')}`, 'bad');
         }
-        setProgress('bioProgress', ++done, matched.length);
+        setProgress('bioProgress', ++done, plan.length);
     }
 
-    logTo('bioLog', `<b>Done.</b> ${matched.length - failed} written${failed ? `, ${failed} failed` : ''}.`);
-    showToast(`Wrote ${matched.length - failed} bios ✓`);
+    const skipped = bioReviewRows.filter(r => r.choice === '__skip__');
+    for (const s of skipped) logTo('bioLog', `Skipped <b>${escapeHtml(s.name)}</b> — no tutor chosen`, 'warn');
+
+    logTo('bioLog', `<b>Done.</b> ${plan.length - failed} written${failed ? `, ${failed} failed` : ''}${skipped.length ? `, ${skipped.length} skipped` : ''}.`);
+    showToast(`Wrote ${plan.length - failed} bios ✓`);
+    resetBioReview();
+};
+
+// ================================================================
+// ===== ADMIN: ADD / EDIT A TUTOR                            =====
+// ================================================================
+// Everything the importers do, one tutor at a time. The photo pipeline is
+// deliberately the same one the bulk import uses, so a photo added here is
+// byte-for-byte what an imported one would have been.
+
+// { id, isNew, photos: [{ id, label, sourceFile, staged? }], targetVid }
+// A "staged" option is one whose file has been chosen but not yet written.
+let editState = null;
+
+const labelToVariantId = label =>
+    fold(label).replace(/[^a-z0-9]+/g, '') || 'main';
+
+// Shrink a chosen file exactly the way the bulk import would.
+async function processPhotoFile(file) {
+    const bitmap = await loadBitmap(file);
+    const thumb = toDataURL(bitmap, THUMB_MAX, THUMB_Q);
+
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    const alreadySmall = PASSTHROUGH_TYPES.test(ext)
+        && file.size <= PASSTHROUGH_MAX_BYTES
+        && Math.max(bitmap.width, bitmap.height) <= CARD_MAX;
+
+    let card = alreadySmall ? await fileToDataURL(file) : toDataURL(bitmap, CARD_MAX, CARD_Q);
+    if (card.length > 900000) card = toDataURL(bitmap, 900, 0.7);
+    if (bitmap.close) bitmap.close();
+
+    return { card, thumb };
+}
+
+function openEditor(id) {
+    if (!isBioAdmin) return;
+    const t = roster.find(x => x.id === id);
+    if (!t) return;
+
+    editState = {
+        id: t.id,
+        isNew: false,
+        photos: photoOptions(t).map(o => ({ id: o.id, label: o.label, sourceFile: o.sourceFile || '' })),
+        targetVid: null
+    };
+
+    $('editTitle').textContent = 'Edit tutor';
+    $('editName').value = t.name || '';
+    $('editBio').value  = t.bio || '';
+    $('editNameHint').textContent =
+        'Changing the name only changes what people see — the tutor keeps their existing photos and their place in the list.';
+    $('editBioHint').textContent = t.bioPlaceholder
+        ? 'This is filler text at the moment. Anything you type replaces it and clears the placeholder badge.'
+        : '';
+    $('editDangerZone').hidden = false;
+    renderEditPhotos();
+    openOverlay($('editModal'));
+}
+
+function openNewTutor() {
+    if (!isBioAdmin) return;
+    editState = { id: null, isNew: true, photos: [], targetVid: null };
+
+    $('editTitle').textContent = 'Add a tutor';
+    $('editName').value = '';
+    $('editBio').value  = '';
+    $('editNameHint').textContent = 'Full name as you want it to appear when a bio is sent.';
+    $('editBioHint').textContent  = 'Leave this blank and they get filler text with a placeholder badge, same as an imported photo with no bio.';
+    $('editDangerZone').hidden = true;
+    renderEditPhotos();
+    openOverlay($('editModal'));
+    nextFrame(() => $('editName').focus());
+}
+
+function renderEditPhotos() {
+    const wrap = $('editPhotos');
+    if (!editState.photos.length) {
+        wrap.innerHTML = '<p class="hint" style="margin:0">No photos yet. Add one below, or leave it — the list shows their initials instead.</p>';
+        return;
+    }
+    wrap.innerHTML = editState.photos.map(p => `
+        <div class="photo-row" data-vid="${escapeHtml(p.id)}">
+            ${p.staged
+                ? `<img src="${p.staged.thumb}" alt="">`
+                : `<div class="pr-chip" data-thumb="${escapeHtml(p.id)}">···</div>`}
+            <span class="pr-label">${escapeHtml(p.label)}</span>
+            ${p.staged ? '<span class="pr-state">new photo ready</span>' : ''}
+            <button class="btn-ghost btn-sm" data-replace="${escapeHtml(p.id)}">${p.staged ? 'Change' : 'Replace'}</button>
+        </div>`).join('');
+
+    // Show what is actually stored, so nobody replaces the wrong one. These
+    // are usually already in cardCache from a send, and it is at most a
+    // couple of reads when they are not.
+    if (!editState.isNew) fillStoredThumbs(editState.id, wrap);
+}
+
+async function fillStoredThumbs(tutorId, wrap) {
+    for (const slot of wrap.querySelectorAll('[data-thumb]')) {
+        try {
+            const card = await getCard(tutorId, slot.dataset.thumb);
+            // The admin may have closed or reopened the editor meanwhile.
+            if (!slot.isConnected) return;
+            const img = document.createElement('img');
+            img.src = card;
+            img.alt = '';
+            slot.replaceWith(img);
+        } catch {
+            if (slot.isConnected) slot.textContent = 'none';
+        }
+    }
+}
+
+$('editPhotos').addEventListener('click', e => {
+    const btn = e.target.closest('[data-replace]');
+    if (!btn) return;
+    editState.targetVid = btn.dataset.replace;
+    $('editPhotoInput').click();
 });
+
+$('editAddPhoto').onclick = () => {
+    const raw = $('editNewLabel').value.trim();
+    if (!raw) { showDialog('Label needed', 'Give the photo a short label first — GI, EL, or Main.', false); return; }
+    const vid = labelToVariantId(raw);
+    if (editState.photos.some(p => p.id === vid)) {
+        showDialog('Already there', `This tutor already has a “${raw}” photo. Use its Replace button instead.`, false);
+        return;
+    }
+    editState.photos.push({ id: vid, label: raw, sourceFile: '', staged: null });
+    editState.targetVid = vid;
+    $('editNewLabel').value = '';
+    renderEditPhotos();
+    $('editPhotoInput').click();
+};
+
+$('editPhotoInput').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    const vid = editState?.targetVid;
+    if (!file || !vid) return;
+
+    const slot = editState.photos.find(p => p.id === vid);
+    if (!slot) return;
+
+    try {
+        slot.staged = await processPhotoFile(file);
+        slot.sourceFile = file.name;
+        renderEditPhotos();
+    } catch (err) {
+        console.error(err);
+        // A freshly added slot with no photo in it is just clutter.
+        if (!slot.staged) editState.photos = editState.photos.filter(p => p !== slot || p.sourceFile);
+        renderEditPhotos();
+        showDialog('Could not read that photo',
+            /heic/i.test(file.name)
+                ? 'HEIC files cannot be opened by this browser. Convert it to JPEG first.'
+                : (err.message || 'The file could not be decoded.'), false);
+    }
+});
+
+$('editCancel').onclick = () => { closeOverlay($('editModal')); editState = null; };
+$('editModal').addEventListener('click', e => {
+    if (e.target === $('editModal')) { closeOverlay($('editModal')); editState = null; }
+});
+
+$('editSave').onclick = async () => {
+    if (!editState) return;
+
+    const name = $('editName').value.trim();
+    const bio  = $('editBio').value.trim();
+
+    if (!name) { showDialog('Name needed', 'A tutor needs a name before they can be saved.', false); return; }
+
+    let id = editState.id;
+    if (editState.isNew) {
+        id = nameKey(name);
+        if (!id) { showDialog('Name needed', 'That name has no letters in it.', false); return; }
+        if (roster.some(t => t.id === id)) {
+            showDialog('Already exists', `${name} is already on the roster. Close this and use the Edit button on their row instead.`, false);
+            return;
+        }
+    }
+
+    const btn = $('editSave');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    try {
+        const stamp = new Date().toISOString();
+
+        // Photos first: a tutor doc that lists an option with no document
+        // behind it would break the send flow.
+        for (const p of editState.photos) {
+            if (!p.staged) continue;
+            await setDoc(photoDoc(id, p.id), { card: p.staged.card, updatedAt: stamp });
+            cardCache.set(`${id}::${p.id}`, p.staged.card);
+        }
+
+        const photos = editState.photos.map(p => ({
+            id: p.id,
+            label: p.label,
+            sourceFile: p.sourceFile || ''
+        }));
+
+        const payload = {
+            name,
+            key: id,
+            photos,
+            updatedAt: stamp,
+            updatedBy: currentUser?.email || 'unknown'
+        };
+
+        // The list avatar follows the first photo option. Only recompute it
+        // when that option actually changed, so a bio-only edit costs nothing.
+        const first = editState.photos[0];
+        const existing = roster.find(t => t.id === id);
+        if (first?.staged) payload.thumb = first.staged.thumb;
+        else if (!existing?.thumb && editState.photos.find(p => p.staged))
+            payload.thumb = editState.photos.find(p => p.staged).staged.thumb;
+
+        // An empty bio box means "no bio", which the rest of the app expresses
+        // as filler text plus a placeholder badge — not as a blank caption.
+        if (bio) {
+            payload.bio = bio;
+            payload.bioPlaceholder = false;
+        } else {
+            payload.bio = placeholderBio(name);
+            payload.bioPlaceholder = true;
+        }
+
+        await setDoc(tutorDoc(id), payload, { merge: true });
+
+        closeOverlay($('editModal'));
+        editState = null;
+        showToast(`${name} saved ✓`);
+    } catch (err) {
+        console.error(err);
+        showDialog('Could not save',
+            err.code === 'permission-denied'
+                ? 'The security rules refused that write. Your account may have lost upload rights.'
+                : (err.message || 'Something went wrong saving this tutor.'), false);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save changes';
+    }
+};
+
+$('editDelete').onclick = () => {
+    if (!editState || editState.isNew) return;
+    const t = roster.find(x => x.id === editState.id);
+    if (!t) return;
+
+    showTypedConfirm(
+        'Delete this tutor?',
+        `${t.name} and all ${editState.photos.length || 'their'} stored photo${editState.photos.length === 1 ? '' : 's'} will be removed for everyone. This cannot be undone.`,
+        t.name,
+        async ok => {
+            if (!ok) return;
+            try {
+                for (const p of editState.photos) {
+                    try {
+                        await deleteDoc(photoDoc(t.id, p.id));
+                        cardCache.delete(`${t.id}::${p.id}`);
+                    } catch (err) {
+                        // A missing photo doc must not block deleting the tutor.
+                        console.warn('photo delete', p.id, err);
+                    }
+                }
+                await deleteDoc(tutorDoc(t.id));
+                picked.delete(t.id);
+                renderTray();
+                closeOverlay($('editModal'));
+                editState = null;
+                showToast(`${t.name} deleted`);
+            } catch (err) {
+                console.error(err);
+                showDialog('Could not delete',
+                    err.code === 'permission-denied'
+                        ? 'The security rules refused that. Only upload admins can delete a tutor.'
+                        : (err.message || 'Something went wrong.'), false);
+            }
+        });
+};
+
+$('newTutorBtn').onclick = openNewTutor;
 
 // ================================================================
 // ===== ADMIN: WHO CAN UPLOAD                                =====
